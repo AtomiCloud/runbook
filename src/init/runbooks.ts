@@ -15,6 +15,8 @@ import { FullAdminClusterCreator } from "../books/full-admin-cluster-creation";
 import { GracefulAdminClusterDestructor } from "../books/graceful-admin-cluster-destruction";
 import { GenericGracefulAdminClusterDestructor } from "../books/graceful-admin-cluster-destruction/generic.ts";
 import { GenericGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/generic.ts";
+import { AdminClusterMigrator } from "../books/admin-cluster-migration";
+import { AdminClusterTransitioner } from "../books/admin-cluster-migration/transition.ts";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -66,6 +68,8 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       d.kubectl,
       sulfoxide.services.tofu,
       sulfoxide.services.backup_engine,
+      sulfoxide.services.metricsServer,
+      t.sulfoxideXenonWaiter,
       CLOUDS.DigitalOcean.slug,
     ),
   ];
@@ -79,9 +83,10 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const fullAdminCloudCreators: FullAdminClusterCloudCreator[] = [
     new DigitalOceanFullAdminClusterCreator(
       d.taskRunner,
-      d.kubectl,
       sulfoxide.services.argocd,
       sulfoxide.services.internal_ingress,
+      t.sulfoxideHeliumWaiter,
+      t.sulfoxideBoronWaiter,
       CLOUDS.DigitalOcean.slug,
     ),
   ];
@@ -109,12 +114,31 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     genericAdminGracefulDestructor,
   );
 
+  // admin cluster migration
+  const adminClusterTransitioner = new AdminClusterTransitioner(
+    d.taskRunner,
+    d.kubectl,
+    sulfoxide.services.argocd,
+    sulfoxide.services.backup_engine,
+    sulfoxide.services.internal_ingress,
+    t.sulfoxideHeliumWaiter,
+    t.sulfoxideBoronWaiter,
+  );
+  const adminClusterMigrator = new AdminClusterMigrator(
+    d.stp,
+    d.serviceTreePrinter,
+    bareAdminCloudCreators,
+    genericAdminGracefulDestructor,
+    adminClusterTransitioner,
+  );
+
   return [
     physicalClusterCreator,
     phyGracefulDestructor,
     bareAdminClusterCreator,
     fullAdminCloudCreator,
     adminGracefulDestructor,
+    adminClusterMigrator,
   ];
 }
 

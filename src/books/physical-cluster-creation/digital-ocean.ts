@@ -202,7 +202,7 @@ class DigitalOceanPhysicalClusterCreator
       "Wait for statefulset (etcd) to be ready",
       async () => {
         for (const ns of ["pichu", "pikachu", "raichu"]) {
-          await this.k.WaitForReplicas({
+          await this.k.WaitForReplica({
             kind: "statefulset",
             context: `${phyLandscape.slug}-${phyCluster.principal.slug}`,
             namespace: ns,
@@ -216,7 +216,7 @@ class DigitalOceanPhysicalClusterCreator
       "Wait for deployment (iodine) to be ready",
       async () => {
         for (const ns of ["pichu", "pikachu", "raichu"]) {
-          await this.k.WaitForReplicas({
+          await this.k.WaitForReplica({
             kind: "deployment",
             context: `${phyLandscape.slug}-${phyCluster.principal.slug}`,
             namespace: ns,

@@ -78,6 +78,7 @@ class GenericGracefulAdminClusterDestructor {
     await this.task.Run([
       "Destroy L1 Infrastructure",
       async () => {
+        await $`pls ${{ raw: L1 }}:init`.cwd(tofuDir);
         await $`pls ${{ raw: L1 }}:state:rm -- 'kubernetes_namespace.sulfoxide'`
           .cwd(tofuDir)
           .nothrow();
