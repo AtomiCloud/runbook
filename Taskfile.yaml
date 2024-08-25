@@ -1,0 +1,40 @@
+version: "3"
+
+env:
+  SERVICES: >-
+    argon boron bromine carbon chlorine cobalt fluorine gold 
+    helium infisical iodine iron krypton lead lithium radon silicon 
+    sodium sulfur tofu tofu-l2 xenon zinc
+tasks:
+  runbook:
+    desc: Runbook
+    cmds:
+      - bun run ./index.ts
+  setup:
+    desc: Setup local environment
+    cmds:
+      - ./scripts/local/secrets.sh
+  pull:
+    desc: Pull all sulfoxide repos
+    cmds:
+      - ./scripts/local/pull.sh
+  clone:
+    desc: Clone all sulfoxide repos
+    cmds:
+      - ./scripts/local/clone.sh
+  check:
+    desc: Check all sulfoxide repos
+    cmds:
+      - ./scripts/local/check.sh
+  kubectl:
+    desc: Generate kubeconfig from all clusters
+    env:
+      SLUGS: "pichu pikachu raichu suicune entei"
+      PCLUSTERS: "entei"
+      VCLUSTERS: "pichu pikachu raichu"
+    cmds:
+      - ./scripts/local/update-kubectl.sh
+  sync:
+    desc: Sync static and secrets
+    cmds:
+      - ./scripts/local/sync.sh

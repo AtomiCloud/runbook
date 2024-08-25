@@ -1,0 +1,20 @@
+name: CI-CD
+
+on:
+  push:
+
+jobs:
+  precommit:
+    name: Pre-commit Check
+    runs-on:
+      - nscloud-ubuntu-22.04-amd64-4x8-with-cache
+      - nscloud-cache-size-50gb
+      - nscloud-cache-tag-runbook-nix-store-cache
+      - nscloud-git-mirror-1gb
+    steps:
+      # Setup
+      - uses: AtomiCloud/actions.setup-nix@v1.2.1
+      - uses: AtomiCloud/actions.cache-bun@v1.0.1
+      # Action
+      - name: Run pre-commit
+        run: nix develop .#ci -c ./scripts/ci/pre-commit.sh
