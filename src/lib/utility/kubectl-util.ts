@@ -39,10 +39,22 @@ class KubectlUtil {
     return `${selector} ${fieldSelector}`;
   }
 
-  async WaitForReplicas(r: Resource): Promise<void> {
+  async Scale(r: Resource, replicas: number): Promise<void> {
+    const cmds = $.escape(
+      `kubectl scale --context ${r.context} -n ${r.namespace} ${r.kind} ${r.name} --replicas=${replicas}`,
+    );
+    console.log(`🖥️ Scale Execute Command: ${cmds}`);
+    await $`kubectl scale --context ${r.context} -n ${r.namespace} ${r.kind} ${r.name} --replicas=${{ raw: replicas.toString(10) }}`;
+  }
+
+  async GetReplica(r: Resource): Promise<number> {
     const { stdout } =
       await $`kubectl get --context ${r.context} --namespace ${r.namespace} ${r.kind} ${r.name} -o jsonpath="{.status.replicas}"`.quiet();
-    const replicas = parseInt(stdout.toString().trim(), 10);
+    return parseInt(stdout.toString().trim(), 10);
+  }
+
+  async WaitForReplica(r: Resource): Promise<void> {
+    const replicas = await this.GetReplica(r);
     const cmds = $.escape(
       `kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.readyReplicas=${replicas} --timeout=600s ${r.kind} ${r.name}`,
     );
@@ -267,4 +279,5 @@ class KubectlUtil {
   }
 }
 
-export { KubectlUtil, type ResourceSearch, type Intervention };
+export { KubectlUtil };
+export type { Resource, ResourceSearch, Intervention, NamespaceSearch };

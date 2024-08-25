@@ -5,7 +5,8 @@ import type {
 } from "../../lib/service-tree-def.ts";
 import type { FullAdminClusterCloudCreator } from "./cloud.ts";
 import type { TaskRunner } from "../../tasks/tasks.ts";
-import type { KubectlUtil } from "../../lib/utility/kubectl-util.ts";
+import type { SulfoxideHeliumWaiter } from "../../tasks/sulfoxide-helium-waiter.ts";
+import type { SulfoxideBoronWaiter } from "../../tasks/sulfoxide-boron-waiter.ts";
 
 class DigitalOceanFullAdminClusterCreator
   implements FullAdminClusterCloudCreator
@@ -14,9 +15,10 @@ class DigitalOceanFullAdminClusterCreator
 
   constructor(
     private task: TaskRunner,
-    private k: KubectlUtil,
     private sulfoxideHelium: ServiceTreeService,
     private sulfoxideBoron: ServiceTreeService,
+    private sulfoxideHeliumWaiter: SulfoxideHeliumWaiter,
+    private sulfoxideBoronWaiter: SulfoxideBoronWaiter,
     slug: string,
   ) {
     this.slug = slug;
@@ -45,45 +47,14 @@ class DigitalOceanFullAdminClusterCreator
       "Create Helium Helm Release",
       async () => {
         const heliumPls = `${admin.landscape.slug}:${admin.cluster.set.slug}`;
-        await $`pls ${{ raw: heliumPls }}:install -- --kube-context ${{ raw: context }} -n ${{ raw: namespace }}`.cwd(
+        await $`pls ${{ raw: heliumPls }}:install -- --kube-context ${context} -n ${namespace}`.cwd(
           heliumDir,
         );
       },
     ]);
 
-    console.log("⏱️ Waiting for Helium to be ready...");
-    const prefix = `${helium.platform.slug}-${helium.principal.slug}-argocd`;
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${prefix}-server`,
-    });
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${prefix}-repo-server`,
-    });
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${prefix}-redis`,
-    });
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${prefix}-notifications-controller`,
-    });
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${prefix}-applicationset-controller`,
-    });
-    console.log("✅ Helium is ready");
+    const waitForHelium = this.sulfoxideHeliumWaiter.task(context, namespace);
+    await this.task.Run(waitForHelium);
 
     await this.task.Run([
       "Create Boron Namespace",
@@ -96,20 +67,14 @@ class DigitalOceanFullAdminClusterCreator
       "Create Boron Helm Release",
       async () => {
         const boronPls = `${admin.landscape.slug}:${admin.cluster.set.slug}`;
-        await $`pls ${{ raw: boronPls }}:install -- --kube-context ${{ raw: context }} -n ${{ raw: boronNS }}`.cwd(
+        await $`pls ${{ raw: boronPls }}:install -- --kube-context ${context} -n ${boronNS}`.cwd(
           boronDir,
         );
       },
     ]);
 
-    console.log("⏱️ Waiting for Boron to be ready...");
-    await this.k.WaitForReplicas({
-      kind: "deployment",
-      context,
-      namespace,
-      name: `${boron.platform.slug}-${boron.principal.slug}`,
-    });
-    console.log("✅ Boron is ready");
+    const waitForBoron = this.sulfoxideBoronWaiter.task(context, namespace);
+    await this.task.Run(waitForBoron);
   }
 }
 

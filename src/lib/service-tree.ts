@@ -230,6 +230,15 @@ const SERVICE_TREE = {
         },
         platform: PLATFORMS.Sulfoxide,
       },
+      metricsServer: {
+        principal: {
+          name: "Metrics Server",
+          slug: "xenon",
+          description: "Metrics Server for Cluster",
+          projectId: "",
+        },
+        platform: PLATFORMS.Sulfoxide,
+      },
       tofu: {
         principal: {
           name: "Tofu",

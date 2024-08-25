@@ -8,6 +8,7 @@ import { input } from "@inquirer/prompts";
 import { $ } from "bun";
 import type { BareAdminClusterCloudCreator } from "./cloud.ts";
 import type { KubectlUtil } from "../../lib/utility/kubectl-util.ts";
+import type {SulfoxideXenonWaiter} from "../../tasks/sulfoxide-xenon-waiter.ts";
 
 class DigitalOceanBareAdminClusterCreator
   implements BareAdminClusterCloudCreator
@@ -20,6 +21,8 @@ class DigitalOceanBareAdminClusterCreator
     private k: KubectlUtil,
     private sulfoxideTofu: ServiceTreeService,
     private sulfoxideFluorine: ServiceTreeService,
+    private sulfoxideXenon: ServiceTreeService,
+    private sulfoxideXenonWaiter: SulfoxideXenonWaiter,
     slug: string,
   ) {
     this.slug = slug;
@@ -29,9 +32,11 @@ class DigitalOceanBareAdminClusterCreator
     // constants
     const admin = { landscape, cluster };
     const tofu = this.sulfoxideTofu;
-    const fluorine = this.sulfoxideFluorine;
+    const F = this.sulfoxideFluorine;
+    const Xe = this.sulfoxideXenon;
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
-    const fluorineDir = `./platforms/${fluorine.platform.slug}/${fluorine.principal.slug}`;
+    const F_Dir = `./platforms/${F.platform.slug}/${F.principal.slug}`;
+    const Xe_Dir = `./platforms/${Xe.platform.slug}/${Xe.principal.slug}`;
     const context = `${admin.landscape.slug}-${admin.cluster.principal.slug}`;
 
     // Check if we want to inject the DO secrets
@@ -95,7 +100,7 @@ class DigitalOceanBareAdminClusterCreator
     await this.task.Run([
       "Setup Velero Backup Engine",
       async () => {
-        await $`nix develop -c pls setup`.cwd(fluorineDir);
+        await $`nix develop -c pls setup`.cwd(F_Dir);
       },
     ]);
 
@@ -104,15 +109,15 @@ class DigitalOceanBareAdminClusterCreator
       "Install Velero Backup Engine",
       async () => {
         await $`nix develop -c pls velero:${{ raw: admin.landscape.slug }}:install -- --kubecontext ${{ raw: context }}`.cwd(
-          fluorineDir,
+          F_Dir,
         );
       },
     ]);
 
-    await this.task.Run([
+    await this.task.Exec([
       "Wait for Velero to be ready",
       async () => {
-        await this.k.WaitForReplicas({
+        await this.k.WaitForReplica({
           namespace: "velero",
           name: "velero",
           context: context,
@@ -121,6 +126,17 @@ class DigitalOceanBareAdminClusterCreator
         await $`kubectl --context ${{ raw: context }} -n velero wait --for=jsonpath=.status.phase=Available --timeout=6000s BackupStorageLocation default`;
       },
     ]);
+
+    await this.task.Run([
+      "Deploy Metrics Server",
+      async () => {
+        const plsXe = `${landscape.slug}:${cluster.set.slug}`;
+        await $`nix develop -c pls ${{ raw: plsXe }}:install -- --kube-context ${context} -n kube-system`.cwd(Xe_Dir);
+      },
+    ]);
+
+    const xenonWaiter = this.sulfoxideXenonWaiter.task(context, "kube-system");
+    await this.task.Exec(xenonWaiter);
   }
 }
 
