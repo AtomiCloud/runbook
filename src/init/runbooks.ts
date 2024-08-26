@@ -17,6 +17,7 @@ import { GenericGracefulAdminClusterDestructor } from "../books/graceful-admin-c
 import { GenericGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/generic.ts";
 import { AdminClusterMigrator } from "../books/admin-cluster-migration";
 import { AdminClusterTransitioner } from "../books/admin-cluster-migration/transition.ts";
+import { AwsPhysicalClusterCreator } from "../books/physical-cluster-creation/aws.ts";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -30,8 +31,20 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       d.kubectl,
       sulfoxide.services.tofu,
       sulfoxide.services.argocd,
-      CLOUDS.DigitalOcean.slug,
+      CLOUDS.DigitalOcean.slug
     ),
+    new AwsPhysicalClusterCreator(
+      d.taskRunner,
+      d.yamlManipulator,
+      d.utilPrompter,
+      d.kubectl,
+      d.git,
+      sulfoxide.services.tofu,
+      sulfoxide.services.argocd,
+      sulfoxide.services.cluster_scaler,
+      sulfoxide.services.aws_adapter,
+      CLOUDS.AWS.slug
+    )
   ];
   const physicalClusterCreator = new PhysicalClusterCreator(
     d.taskRunner,
@@ -39,25 +52,24 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     t.nitrosoWaiter,
     sulfoxide.services.argocd,
     LANDSCAPE_TREE.v,
-    phyClusterCreators,
+    phyClusterCreators
   );
 
   // graceful physical cluster destruction
-  const genericPhyGracefulDestructor =
-    new GenericGracefulPhysicalClusterDestructor(
-      d.taskRunner,
-      d.yamlManipulator,
-      d.kubectl,
-      d.utilPrompter,
-      sulfoxide.services.tofu,
-      sulfoxide.services.argocd,
-      LANDSCAPE_TREE.v,
-    );
+  const genericPhyGracefulDestructor = new GenericGracefulPhysicalClusterDestructor(
+    d.taskRunner,
+    d.yamlManipulator,
+    d.kubectl,
+    d.utilPrompter,
+    sulfoxide.services.tofu,
+    sulfoxide.services.argocd,
+    LANDSCAPE_TREE.v
+  );
 
   const phyGracefulDestructor = new GracefulPhysicalClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
-    genericPhyGracefulDestructor,
+    genericPhyGracefulDestructor
   );
 
   // bare admin cluster creation
@@ -70,14 +82,10 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.backup_engine,
       sulfoxide.services.metricsServer,
       t.sulfoxideXenonWaiter,
-      CLOUDS.DigitalOcean.slug,
-    ),
+      CLOUDS.DigitalOcean.slug
+    )
   ];
-  const bareAdminClusterCreator = new BareAdminClusterCreator(
-    d.stp,
-    d.serviceTreePrinter,
-    bareAdminCloudCreators,
-  );
+  const bareAdminClusterCreator = new BareAdminClusterCreator(d.stp, d.serviceTreePrinter, bareAdminCloudCreators);
 
   // full admin cluster creation
   const fullAdminCloudCreators: FullAdminClusterCloudCreator[] = [
@@ -87,31 +95,30 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.internal_ingress,
       t.sulfoxideHeliumWaiter,
       t.sulfoxideBoronWaiter,
-      CLOUDS.DigitalOcean.slug,
-    ),
+      CLOUDS.DigitalOcean.slug
+    )
   ];
 
   const fullAdminCloudCreator = new FullAdminClusterCreator(
     d.stp,
     d.serviceTreePrinter,
     bareAdminCloudCreators,
-    fullAdminCloudCreators,
+    fullAdminCloudCreators
   );
 
   // graceful admin cluster destruction
-  const genericAdminGracefulDestructor =
-    new GenericGracefulAdminClusterDestructor(
-      d.taskRunner,
-      d.kubectl,
-      sulfoxide.services.argocd,
-      sulfoxide.services.internal_ingress,
-      sulfoxide.services.tofu,
-    );
+  const genericAdminGracefulDestructor = new GenericGracefulAdminClusterDestructor(
+    d.taskRunner,
+    d.kubectl,
+    sulfoxide.services.argocd,
+    sulfoxide.services.internal_ingress,
+    sulfoxide.services.tofu
+  );
 
   const adminGracefulDestructor = new GracefulAdminClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
-    genericAdminGracefulDestructor,
+    genericAdminGracefulDestructor
   );
 
   // admin cluster migration
@@ -122,14 +129,14 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     sulfoxide.services.backup_engine,
     sulfoxide.services.internal_ingress,
     t.sulfoxideHeliumWaiter,
-    t.sulfoxideBoronWaiter,
+    t.sulfoxideBoronWaiter
   );
   const adminClusterMigrator = new AdminClusterMigrator(
     d.stp,
     d.serviceTreePrinter,
     bareAdminCloudCreators,
     genericAdminGracefulDestructor,
-    adminClusterTransitioner,
+    adminClusterTransitioner
   );
 
   return [
@@ -138,7 +145,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     bareAdminClusterCreator,
     fullAdminCloudCreator,
     adminGracefulDestructor,
-    adminClusterMigrator,
+    adminClusterMigrator
   ];
 }
 

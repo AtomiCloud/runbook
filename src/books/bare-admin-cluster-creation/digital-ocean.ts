@@ -1,18 +1,13 @@
-import type { TaskRunner } from "../../tasks/tasks.ts";
-import type { UtilPrompter } from "../../lib/prompts/util-prompter.ts";
-import type {
-  LandscapeCluster,
-  ServiceTreeService,
-} from "../../lib/service-tree-def.ts";
-import { input } from "@inquirer/prompts";
-import { $ } from "bun";
-import type { BareAdminClusterCloudCreator } from "./cloud.ts";
-import type { KubectlUtil } from "../../lib/utility/kubectl-util.ts";
-import type {SulfoxideXenonWaiter} from "../../tasks/sulfoxide-xenon-waiter.ts";
+import type { TaskRunner } from '../../tasks/tasks.ts';
+import type { UtilPrompter } from '../../lib/prompts/util-prompter.ts';
+import type { LandscapeCluster, ServiceTreeService } from '../../lib/service-tree-def.ts';
+import { input } from '@inquirer/prompts';
+import { $ } from 'bun';
+import type { BareAdminClusterCloudCreator } from './cloud.ts';
+import type { KubectlUtil } from '../../lib/utility/kubectl-util.ts';
+import type { SulfoxideXenonWaiter } from '../../tasks/sulfoxide-xenon-waiter.ts';
 
-class DigitalOceanBareAdminClusterCreator
-  implements BareAdminClusterCloudCreator
-{
+class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreator {
   slug: string;
 
   constructor(
@@ -40,20 +35,16 @@ class DigitalOceanBareAdminClusterCreator
     const context = `${admin.landscape.slug}-${admin.cluster.principal.slug}`;
 
     // Check if we want to inject the DO secrets
-    const doSecrets = await this.up.YesNo(
-      "Do you want to inject Digital Ocean secrets?",
-    );
+    const doSecrets = await this.up.YesNo('Do you want to inject Digital Ocean secrets?');
     if (doSecrets) {
-      const token = await input({ message: "Enter your Digital Ocean token" });
+      const token = await input({ message: 'Enter your Digital Ocean token' });
       await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${admin.landscape.slug} ${admin.cluster.principal.slug.toUpperCase()}_DIGITALOCEAN_TOKEN=${token}`;
-      console.log(
-        `✅ Digital Ocean secrets for '${admin.landscape.name}' '${admin.cluster.principal.name} injected`,
-      );
+      console.log(`✅ Digital Ocean secrets for '${admin.landscape.name}' '${admin.cluster.principal.name} injected`);
     }
 
     const L0 = `${admin.landscape.slug}:l0:${admin.cluster.principal.slug}`;
     await this.task.Run([
-      "Build L0 Infrastructure",
+      'Build L0 Infrastructure',
       async () => {
         await $`pls setup`.cwd(tofuDir);
         await $`pls ${{ raw: L0 }}:init`.cwd(tofuDir);
@@ -62,17 +53,15 @@ class DigitalOceanBareAdminClusterCreator
     ]);
 
     await this.task.Run([
-      "Retrieve Kubectl Configurations",
+      'Retrieve Kubectl Configurations',
       async () => {
         await $`pls kubectl`;
       },
     ]);
 
     // extract endpoint to use
-    console.log("📤 Extract endpoint to use...");
-    const output = await $`pls ${{ raw: L0 }}:output -- -json`
-      .cwd(tofuDir)
-      .json();
+    console.log('📤 Extract endpoint to use...');
+    const output = await $`pls ${{ raw: L0 }}:output -- -json`.cwd(tofuDir).json();
     const endpoint = output.cluster_endpoint.value;
     console.log(`✅ Extracted endpoint: ${endpoint}`);
 
@@ -80,7 +69,7 @@ class DigitalOceanBareAdminClusterCreator
     const L1G = `${admin.landscape.slug}:l1:${admin.cluster.set.slug}`;
     const L1 = `${admin.landscape.slug}:l1:${admin.cluster.principal.slug}`;
     await this.task.Run([
-      "Build L1 Generic Infrastructure",
+      'Build L1 Generic Infrastructure',
       async () => {
         await $`pls ${{ raw: L1G }}:init`.cwd(tofuDir);
         await $`pls ${{ raw: L1G }}:apply`.cwd(tofuDir);
@@ -89,7 +78,7 @@ class DigitalOceanBareAdminClusterCreator
 
     // build L1 infrastructure
     await this.task.Run([
-      "Build L1 Infrastructure",
+      'Build L1 Infrastructure',
       async () => {
         await $`pls ${{ raw: L1 }}:init`.cwd(tofuDir);
         await $`pls ${{ raw: L1 }}:apply`.cwd(tofuDir);
@@ -98,7 +87,7 @@ class DigitalOceanBareAdminClusterCreator
 
     // setup velero backup engine
     await this.task.Run([
-      "Setup Velero Backup Engine",
+      'Setup Velero Backup Engine',
       async () => {
         await $`nix develop -c pls setup`.cwd(F_Dir);
       },
@@ -106,7 +95,7 @@ class DigitalOceanBareAdminClusterCreator
 
     // install velero backup engine
     await this.task.Run([
-      "Install Velero Backup Engine",
+      'Install Velero Backup Engine',
       async () => {
         await $`nix develop -c pls velero:${{ raw: admin.landscape.slug }}:install -- --kubecontext ${{ raw: context }}`.cwd(
           F_Dir,
@@ -115,27 +104,27 @@ class DigitalOceanBareAdminClusterCreator
     ]);
 
     await this.task.Exec([
-      "Wait for Velero to be ready",
+      'Wait for Velero to be ready',
       async () => {
         await this.k.WaitForReplica({
-          namespace: "velero",
-          name: "velero",
+          namespace: 'velero',
+          name: 'velero',
           context: context,
-          kind: "deployment",
+          kind: 'deployment',
         });
         await $`kubectl --context ${{ raw: context }} -n velero wait --for=jsonpath=.status.phase=Available --timeout=6000s BackupStorageLocation default`;
       },
     ]);
 
     await this.task.Run([
-      "Deploy Metrics Server",
+      'Deploy Metrics Server',
       async () => {
         const plsXe = `${landscape.slug}:${cluster.set.slug}`;
         await $`nix develop -c pls ${{ raw: plsXe }}:install -- --kube-context ${context} -n kube-system`.cwd(Xe_Dir);
       },
     ]);
 
-    const xenonWaiter = this.sulfoxideXenonWaiter.task(context, "kube-system");
+    const xenonWaiter = this.sulfoxideXenonWaiter.task(context, 'kube-system');
     await this.task.Exec(xenonWaiter);
   }
 }

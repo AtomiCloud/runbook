@@ -6,6 +6,7 @@ import { YamlManipulator } from "../lib/utility/yaml-manipulator.ts";
 import { ServiceTreePrompter } from "../lib/prompts/landscape.ts";
 import { CLOUD_TREE, LANDSCAPE_TREE } from "../lib/service-tree.ts";
 import { TaskRunner } from "../tasks/tasks.ts";
+import { Git } from "../lib/utility/git.ts";
 
 interface Dependencies {
   httpUtil: HttpUtil;
@@ -15,6 +16,7 @@ interface Dependencies {
   yamlManipulator: YamlManipulator;
   stp: ServiceTreePrompter;
   taskRunner: TaskRunner;
+  git: Git;
 }
 
 // helpers
@@ -29,6 +31,7 @@ const stp = new ServiceTreePrompter(
   LANDSCAPE_TREE.p,
 );
 const taskRunner = new TaskRunner(utilPrompter);
+const git = new Git();
 
 const dependencies: Dependencies = {
   httpUtil,
@@ -38,6 +41,7 @@ const dependencies: Dependencies = {
   yamlManipulator,
   stp,
   taskRunner,
+  git,
 };
 
 export { dependencies, type Dependencies };
