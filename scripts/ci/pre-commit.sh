@@ -2,6 +2,6 @@
 
 set -eou pipefail
 
-bun i
+bun i --frozen-lockfile
 
 pre-commit run --all-files -v

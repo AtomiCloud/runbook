@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 env:
   SERVICES: >-
@@ -29,9 +29,9 @@ tasks:
   kubectl:
     desc: Generate kubeconfig from all clusters
     env:
-      SLUGS: "pichu pikachu raichu suicune entei"
-      PCLUSTERS: "entei"
-      VCLUSTERS: "pichu pikachu raichu"
+      SLUGS: 'pichu pikachu raichu suicune entei'
+      PCLUSTERS: 'entei'
+      VCLUSTERS: 'pichu pikachu raichu'
     cmds:
       - ./scripts/local/update-kubectl.sh
   sync:

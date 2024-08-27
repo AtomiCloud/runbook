@@ -7,8 +7,9 @@ import type { YamlManipulator } from '../../lib/utility/yaml-manipulator.ts';
 import type { KubectlUtil } from '../../lib/utility/kubectl-util.ts';
 import type { LandscapeCluster, ServiceTreeService } from '../../lib/service-tree-def.ts';
 import type { TaskRunner } from '../../tasks/tasks.ts';
+import type { Git } from '../../lib/utility/git.ts';
 
-class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator {
+class AwsPhysicalClusterCreator implements PhysicalClusterCloudCreator {
   slug: string;
 
   constructor(
@@ -16,8 +17,11 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
     private y: YamlManipulator,
     private up: UtilPrompter,
     private k: KubectlUtil,
-    private sulfoxide_tofu: ServiceTreeService,
-    private sulfoxide_helium: ServiceTreeService,
+    private g: Git,
+    private sulfoxideTofu: ServiceTreeService,
+    private sulfoxideHelium: ServiceTreeService,
+    private sulfoxideKrypton: ServiceTreeService,
+    private sulfoxideLead: ServiceTreeService,
     slug: string,
   ) {
     this.slug = slug;
@@ -28,29 +32,41 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
     [adminLandscape, adminCluster]: LandscapeCluster,
   ): Promise<void> {
     // constants
-    const tofu = this.sulfoxide_tofu;
-    const helium = this.sulfoxide_helium;
-    const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
-    const heliumDir = `./platforms/${helium.platform.slug}/${helium.principal.slug}`;
+    const tofu = this.sulfoxideTofu;
+    const He = this.sulfoxideHelium;
+    const Kr = this.sulfoxideKrypton;
+    const Pb = this.sulfoxideLead;
 
-    const yamlPath = path.join(heliumDir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
-    const adminContextSlug = `${adminLandscape.slug}-${adminCluster.principal.slug}`;
-    const adminNamespaceSlug = `${helium.platform.slug}-${helium.principal.slug}`;
+    const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
+    const He_Dir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
+    const Kr_Dir = `./platforms/${Kr.platform.slug}/${Kr.principal.slug}`;
+    const Pb_Dir = `./platforms/${Pb.platform.slug}/${Pb.principal.slug}`;
+
+    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
+    const Kr_YamlPath = path.join(Kr_Dir, 'chart', `values.${phyLandscape.slug}.${phyCluster.principal.slug}.yaml`);
+    const Pb_YamlPath = path.join(Pb_Dir, 'chart', `values.${phyLandscape.slug}.${phyCluster.principal.slug}.yaml`);
+
+    const aCtx = `${adminLandscape.slug}-${adminCluster.principal.slug}`;
+    const aNS = `${He.platform.slug}-${He.principal.slug}`;
 
     // Check if we want to inject the DO secrets
-    const doSecrets = await this.up.YesNo('Do you want to inject Digital Ocean secrets?');
-    if (doSecrets) {
-      const token = await input({ message: 'Enter your Digital Ocean token' });
-      await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${phyLandscape.slug} ${phyCluster.principal.slug.toUpperCase()}_DIGITALOCEAN_TOKEN=${token}`;
-      console.log('✅ Digital Ocean secrets injected');
+    const awsSecrets = await this.up.YesNo('Do you want to inject AWS secrets?');
+    if (awsSecrets) {
+      const access = await input({ message: 'Enter your AWS Access Key' });
+      await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${phyLandscape.slug} ${phyCluster.principal.slug.toUpperCase()}_AWS_ACCESS_KEY=${access}`;
+      console.log('✅ AWS Access Key injected');
+      const secret = await input({ message: 'Enter your AWS Secret Key' });
+      await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${phyLandscape.slug} ${phyCluster.principal.slug.toUpperCase()}_AWS_SECRET_KEY=${secret}`;
+      console.log('✅ AWS Secret Key injected');
     }
 
+    const L0 = `${phyLandscape.slug}:l0:${phyCluster.principal.slug}`;
     await this.task.Run([
       'Build L0 Infrastructure',
       async () => {
         await $`pls setup`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L0 }}:init`.cwd(tofuDir);
+        await $`pls ${{ raw: L0 }}:apply`.cwd(tofuDir);
       },
     ]);
 
@@ -63,27 +79,75 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
 
     // extract endpoint to use
     console.log('📤 Extract endpoint to use...');
-    const output = await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:output -- -json`
-      .cwd(tofuDir)
-      .json();
+    const output = await $`pls ${{ raw: L0 }}:output -- -json`.cwd(tofuDir).json();
     const endpoint = output.cluster_endpoint.value;
     console.log(`✅ Extracted endpoint: ${endpoint}`);
 
     // build L1 generic infrastructure
+    const L1G = `${phyLandscape.slug}:l1:${phyCluster.set.slug}`;
     await this.task.Run([
       'Build L1 Generic Infrastructure',
       async () => {
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.set.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.set.slug}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L1G }}:init`.cwd(tofuDir);
+        await $`pls ${{ raw: L1G }}:apply`.cwd(tofuDir);
+      },
+    ]);
+
+    // Propagate Tofu outputs for Karpenter
+    const nodeRole = output.karpenter_node_role_name.value;
+    const nodeArn = output.karpenter_role_arn.value;
+    console.log('📤 Extract node role and ARN to use...');
+    console.log(`✅ Extracted node role: ${nodeRole}`);
+    console.log(`✅ Extracted node ARN: ${nodeArn}`);
+
+    await this.task.Run([
+      'Propagate Tofu outputs to Krypton (Karpenter)',
+      async () => {
+        console.log(`🛣️ Propagating YAML Path: ${Kr_YamlPath}`);
+        await this.y.Mutate(Kr_YamlPath, [
+          [['nodeRole'], nodeRole],
+          [['karpenterRole'], nodeArn],
+        ]);
+      },
+    ]);
+
+    await this.task.Run([
+      'Commit changes to Krypton',
+      async () => {
+        await this.g.CommitAndPush(Kr_Dir, 'action: propagate Tofu outputs to Krypton');
+      },
+    ]);
+
+    // propagate Tofu outputs for Lead
+    const irsaRoleArn = output.irsa_role_arn.value;
+    const vpcId = output.vpc_id.value;
+    console.log('📤 Extract IRSA Role ARN and VPC ID to use...');
+    console.log(`✅ Extracted IRSA Role ARN: ${irsaRoleArn}`);
+    console.log(`✅ Extracted VPC ID: ${vpcId}`);
+    await this.task.Run([
+      'Propagate Tofu outputs to Lead (IRSA Components)',
+      async () => {
+        await this.y.Mutate(Pb_YamlPath, [
+          [['role'], irsaRoleArn],
+          [['vpcId'], vpcId],
+        ]);
+      },
+    ]);
+
+    await this.task.Run([
+      'Commit changes to Lead',
+      async () => {
+        await this.g.CommitAndPush(Pb_Dir, 'action: propagate Tofu outputs to Lead');
       },
     ]);
 
     // build L1 infrastructure
+    const L1 = `${phyLandscape.slug}:l1:${phyCluster.principal.slug}`;
     await this.task.Run([
       'Build L1 Infrastructure',
       async () => {
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.principal.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.principal.slug}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L1 }}:init`.cwd(tofuDir);
+        await $`pls ${{ raw: L1 }}:apply`.cwd(tofuDir);
       },
     ]);
 
@@ -91,7 +155,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
     await this.task.Run([
       'Update Helium Configuration',
       async () => {
-        await this.y.Mutate(yamlPath, [
+        await this.y.Mutate(He_YamlPath, [
           [['connector', 'clusters', phyLandscape.slug, phyCluster.principal.slug, 'enable'], true],
           [['connector', 'clusters', phyLandscape.slug, phyCluster.principal.slug, 'deployAppSet'], true],
           [['connector', 'clusters', phyLandscape.slug, phyCluster.principal.slug, 'aoa', 'enable'], true],
@@ -101,12 +165,11 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
     ]);
 
     // apply ArgoCD configurations
+    const HePls = `${adminLandscape.slug}:${adminCluster.set.slug}`;
     await this.task.Run([
       'Apply Helium Configuration',
       async () => {
-        await $`pls ${adminLandscape.slug}:${adminCluster.set.slug}:install -- --kube-context ${adminContextSlug} -n ${adminNamespaceSlug}`.cwd(
-          heliumDir,
-        );
+        await $`pls ${{ raw: HePls }}:install -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
       },
     ]);
 
@@ -126,8 +189,8 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
       async () => {
         await this.k.WaitForApplications(3, {
           kind: 'app',
-          context: adminContextSlug,
-          namespace: adminNamespaceSlug,
+          context: aCtx,
+          namespace: aNS,
           selector: [
             ['atomi.cloud/sync-wave', 'wave-5'],
             ['atomi.cloud/landscape', phyLandscape.slug],
@@ -179,8 +242,8 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
       async () => {
         await this.k.WaitForApplications(3, {
           kind: 'app',
-          context: adminContextSlug,
-          namespace: adminNamespaceSlug,
+          context: aCtx,
+          namespace: aNS,
           selector: [
             ['atomi.cloud/sync-wave', 'wave-5'],
             ['atomi.cloud/element', 'silicon'],
@@ -192,4 +255,4 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
   }
 }
 
-export { DigitalOceanPhysicalClusterCreator };
+export { AwsPhysicalClusterCreator };

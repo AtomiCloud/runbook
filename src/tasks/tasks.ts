@@ -1,5 +1,5 @@
-import pc from "picocolors";
-import type { UtilPrompter } from "../lib/prompts/util-prompter.ts";
+import pc from 'picocolors';
+import type { UtilPrompter } from '../lib/prompts/util-prompter.ts';
 
 // name, action
 interface ComplexTask {
@@ -63,10 +63,8 @@ class TaskRunner {
    * @constructor
    */
   async Run(task: Task): Promise<void> {
-    const r = await this.up.YesNoExit(
-      `Do you want to run task '${this.extractName(task)}'?`,
-    );
-    if (r === "exit") process.exit(0);
+    const r = await this.up.YesNoExit(`Do you want to run task '${this.extractName(task)}'?`);
+    if (r === 'exit') process.exit(0);
     if (r) await this.Exec(task);
   }
 }
