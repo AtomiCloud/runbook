@@ -1,4 +1,4 @@
-import { $ } from "bun";
+import { $ } from 'bun';
 
 class Git {
   async CommitAndPush(dir: string, message: string): Promise<void> {

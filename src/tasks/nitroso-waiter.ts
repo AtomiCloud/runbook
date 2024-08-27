@@ -1,7 +1,7 @@
-import type { Task } from "./tasks.ts";
-import { SERVICE_TREE } from "../lib/service-tree.ts";
-import { KubectlUtil } from "../lib/utility/kubectl-util.ts";
-import { HttpUtil } from "../lib/utility/http-util.ts";
+import type { Task } from './tasks.ts';
+import { SERVICE_TREE } from '../lib/service-tree.ts';
+import { KubectlUtil } from '../lib/utility/kubectl-util.ts';
+import { HttpUtil } from '../lib/utility/http-util.ts';
 
 class NitrosoWaiter {
   constructor(
@@ -9,7 +9,7 @@ class NitrosoWaiter {
     private h: HttpUtil,
   ) {}
 
-  name: string = "Wait for Nitroso to be ready";
+  name: string = 'Wait for Nitroso to be ready';
   services: string[] = [
     SERVICE_TREE.nitroso.services.tin.principal.slug,
     SERVICE_TREE.nitroso.services.helium.principal.slug,
@@ -32,7 +32,7 @@ class NitrosoWaiter {
             const name = `${phy}-${cluster}-nitroso-${service}`;
             console.log(`⏱️ Waiting for ${name} to be ready...`);
             await this.k.WaitForApplication({
-              kind: "app",
+              kind: 'app',
               context: adminContext,
               namespace: adminNamespace,
               name,
@@ -44,16 +44,16 @@ class NitrosoWaiter {
           const sslName = `api-zinc-nitroso-${v}-tls-x-nitroso-x-${phyLandscape}-${v}-iodine`;
           const context = `${phyLandscape}-${cluster}`;
           await this.k.Wait(1, 5, {
-            kind: "certificate",
+            kind: 'certificate',
             context,
             namespace: v,
-            fieldSelector: [["metadata.name", sslName]],
+            fieldSelector: [['metadata.name', sslName]],
           });
           await this.k.Wait(1, 5, {
-            kind: "secret",
+            kind: 'secret',
             context,
             namespace: v,
-            fieldSelector: [["metadata.name", sslName]],
+            fieldSelector: [['metadata.name', sslName]],
           });
         }
         // wait for endpoint to be ready
