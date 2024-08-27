@@ -50,7 +50,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
       async () => {
         await $`pls setup`.cwd(tofuDir);
         await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:apply`.cwd(tofuDir);
+        await $`pls ${phyLandscape.slug}:l0:${phyCluster.principal.slug}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -74,7 +74,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
       'Build L1 Generic Infrastructure',
       async () => {
         await $`pls ${phyLandscape.slug}:l1:${phyCluster.set.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.set.slug}:apply`.cwd(tofuDir);
+        await $`pls ${phyLandscape.slug}:l1:${phyCluster.set.slug}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -83,7 +83,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
       'Build L1 Infrastructure',
       async () => {
         await $`pls ${phyLandscape.slug}:l1:${phyCluster.principal.slug}:init`.cwd(tofuDir);
-        await $`pls ${phyLandscape.slug}:l1:${phyCluster.principal.slug}:apply`.cwd(tofuDir);
+        await $`pls ${phyLandscape.slug}:l1:${phyCluster.principal.slug}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 

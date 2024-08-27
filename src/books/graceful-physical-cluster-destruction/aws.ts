@@ -9,8 +9,11 @@ import { KubectlUtil, type ResourceSearch } from '../../lib/utility/kubectl-util
 import type { TaskRunner } from '../../tasks/tasks.ts';
 import type { YamlManipulator } from '../../lib/utility/yaml-manipulator.ts';
 import type { UtilPrompter } from '../../lib/prompts/util-prompter.ts';
+import type { GracefulClusterCloudDestructor } from './cloud.ts';
 
-class GenericGracefulPhysicalClusterDestructor {
+class AwsGracefulPhysicalClusterDestructor implements GracefulClusterCloudDestructor {
+  slug: string;
+
   constructor(
     private task: TaskRunner,
     private y: YamlManipulator,
@@ -18,8 +21,12 @@ class GenericGracefulPhysicalClusterDestructor {
     private up: UtilPrompter,
     private sulfoxideTofu: ServiceTreeService,
     private sulfoxideHelium: ServiceTreeService,
+    private sulfoxideGold: ServiceTreeService,
     private virtualLandscapes: ServiceTreeLandscapePrincipal[],
-  ) {}
+    slug: string,
+  ) {
+    this.slug = slug;
+  }
 
   async Run(
     [phyLandscape, phyCluster]: LandscapeCluster,
@@ -29,14 +36,18 @@ class GenericGracefulPhysicalClusterDestructor {
     const admin = { landscape: adminLandscape, cluster: adminCluster };
 
     // common variables
-    const argo = this.sulfoxideHelium;
     const tofu = this.sulfoxideTofu;
-    const phyContextSlug = `${phy.landscape.slug}-${phy.cluster.principal.slug}`;
-    const adminContextSlug = `${admin.landscape.slug}-${admin.cluster.principal.slug}`;
-    const adminNamespaceSlug = `${argo.platform.slug}-${argo.principal.slug}`;
+    const He = this.sulfoxideHelium;
+    const Au = this.sulfoxideGold;
+
+    const pCtx = `${phy.landscape.slug}-${phy.cluster.principal.slug}`;
+    const aCtx = `${admin.landscape.slug}-${admin.cluster.principal.slug}`;
+    const aNS = `${He.platform.slug}-${He.principal.slug}`;
+
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
-    const heliumDir = `./platforms/${argo.platform.slug}/${argo.principal.slug}`;
-    const yamlPath = path.join(heliumDir, 'chart', `values.${admin.landscape.slug}.${admin.cluster.set.slug}.yaml`);
+    const He_Dir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
+
+    const yamlPath = path.join(He_Dir, 'chart', `values.${admin.landscape.slug}.${admin.cluster.set.slug}.yaml`);
 
     // Update ArgoCD configurations
     await this.task.Run([
@@ -57,40 +68,87 @@ class GenericGracefulPhysicalClusterDestructor {
     await this.task.Run([
       'Apply Helium Configuration',
       async () => {
-        await $`pls ${{ raw: adminPls }}:install -- --kube-context ${adminContextSlug} --namespace ${adminNamespaceSlug}`.cwd(
-          heliumDir,
-        );
+        await $`pls ${{ raw: adminPls }}:install -- --kube-context ${aCtx} --namespace ${aNS}`.cwd(He_Dir);
+      },
+    ]);
+
+    // Must clean up load balancer properly
+    await this.task.Run([
+      'Delete Internal Ingress App',
+      async () => {
+        // delete root app
+        await this.k.Delete({
+          kind: 'app',
+          context: aCtx,
+          namespace: aNS,
+          name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-carbon`,
+        });
+        await this.k.DeleteRange({
+          kind: 'app',
+          context: aCtx,
+          namespace: aNS,
+          selector: [
+            ['atomi.cloud/cluster', phy.cluster.principal.slug],
+            ['atomi.cloud/landscape', phy.landscape.slug],
+            ['atomi.cloud/element', Au.principal.slug],
+          ],
+        });
+      },
+    ]);
+
+    await this.task.Run([
+      'Delete Internal Ingress Service',
+      async () => {
+        const name = `${phy.landscape.slug}-${Au.principal.slug}-ingress-nginx-controller`;
+        await this.k.Delete({
+          kind: 'service',
+          context: pCtx,
+          namespace: Au.platform.slug,
+          name,
+        });
+
+        await this.k.Wait(0, 5, {
+          kind: 'service',
+          context: pCtx,
+          namespace: Au.platform.slug,
+          fieldSelector: [['metadata.name', name]],
+        });
       },
     ]);
 
     // delete applications from ArgoCD
     const appsToRemove: ResourceSearch = {
       kind: 'app',
-      context: adminContextSlug,
-      namespace: adminNamespaceSlug,
+      context: aCtx,
+      namespace: aNS,
       selector: [['atomi.cloud/cluster', phy.cluster.principal.slug]],
     };
+
+    const deleteApps = async () => {
+      console.log(`🗑️ Delete Root Application: ${phy.landscape.slug}-${phy.cluster.principal.slug}-carbon`);
+      await this.k.Delete({
+        kind: 'app',
+        context: aCtx,
+        namespace: aNS,
+        name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-carbon`,
+      });
+      console.log('✅ Root Application deleted');
+
+      console.log('🗑️ Deleting applications...');
+      await this.k.DeleteRange(appsToRemove);
+      console.log('✅ Applications deleted');
+    };
+
+    await this.task.Run(['Delete Applications', deleteApps]);
+
     await this.task.Run([
-      'Delete Applications',
+      'Wait for Applications to be deleted',
       async () => {
         return await this.k.Wait(0, 3, appsToRemove, {
           count: 3,
           action: async () => {
             const deleteApp = await this.up.YesNo('Do you want to manually delete the applications?');
-            if (deleteApp) {
-              console.log(`🗑️ Delete Root Application: ${phy.landscape.slug}-${phy.cluster.principal.slug}-carbon`);
-              await this.k.Delete({
-                kind: 'app',
-                context: adminContextSlug,
-                namespace: adminNamespaceSlug,
-                name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-carbon`,
-              });
-              console.log('✅ Root Application deleted');
-
-              console.log('🗑️ Deleting applications...');
-              await this.k.DeleteRange(appsToRemove);
-              console.log('✅ Applications deleted');
-            }
+            if (deleteApp) await deleteApps();
             return false;
           },
         });
@@ -101,7 +159,7 @@ class GenericGracefulPhysicalClusterDestructor {
     await this.task.Run([
       'Delete Validating Webhooks',
       async () => {
-        await $`kubectl --context ${phyContextSlug} delete validatingwebhookconfigurations --all`.nothrow();
+        await $`kubectl --context ${pCtx} delete validatingwebhookconfigurations --all`.nothrow();
       },
     ]);
 
@@ -112,11 +170,23 @@ class GenericGracefulPhysicalClusterDestructor {
         for (const namespace of ['pichu', 'pikachu', 'raichu', 'sulfoxide']) {
           console.log(`  🗑️ Removing namespace: ${namespace}`);
           await this.k.DeleteNamespace({
-            context: phyContextSlug,
+            context: pCtx,
             namespace,
           });
           console.log(`  ✅ Namespace removed: ${namespace}`);
         }
+      },
+    ]);
+
+    // Wait for Nodes to be decommissioned
+    await this.task.Exec([
+      'Wait for Nodes to be decommissioned',
+      async () => {
+        await this.k.Wait(0, 5, {
+          kind: 'node',
+          context: pCtx,
+          selector: [['karpenter.sh/nodepool', 'bottlerocket']],
+        });
       },
     ]);
 
@@ -133,7 +203,7 @@ class GenericGracefulPhysicalClusterDestructor {
     await this.task.Run([
       'Destroy Generic Infrastructure',
       async () => {
-        await $`pls ${{ raw: L1G }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L1G }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -143,7 +213,7 @@ class GenericGracefulPhysicalClusterDestructor {
       'Destroy L1 Infrastructure',
       async () => {
         await $`pls ${{ raw: L1 }}:state:rm -- 'kubernetes_namespace.sulfoxide'`.cwd(tofuDir).nothrow();
-        await $`pls ${{ raw: L1 }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L1 }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -155,7 +225,7 @@ class GenericGracefulPhysicalClusterDestructor {
         await $`pls ${{ raw: L0 }}:state:rm -- 'module.cluster.module.proxy_secret.kubernetes_namespace.kubernetes-access'`
           .cwd(tofuDir)
           .nothrow();
-        await $`pls ${{ raw: L0 }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L0 }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -173,27 +243,27 @@ class GenericGracefulPhysicalClusterDestructor {
         for (const ns of this.virtualLandscapes.map(x => x.slug)) {
           await this.k.Delete({
             kind: 'externalsecret',
-            context: adminContextSlug,
-            namespace: adminNamespaceSlug,
+            context: aCtx,
+            namespace: aNS,
             name: `phase-6-${ns}-${phy.cluster.principal.slug}-cluster-secret`,
           });
         }
         await this.k.Delete({
           kind: 'externalsecret',
-          context: adminContextSlug,
-          namespace: adminNamespaceSlug,
+          context: aCtx,
+          namespace: aNS,
           name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-external-secret`,
         });
         await this.k.Delete({
           kind: 'externalsecret',
-          context: adminContextSlug,
-          namespace: adminNamespaceSlug,
+          context: aCtx,
+          namespace: aNS,
           name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-external-secret-bearer-token`,
         });
         await this.k.Delete({
           kind: 'externalsecret',
-          context: adminContextSlug,
-          namespace: adminNamespaceSlug,
+          context: aCtx,
+          namespace: aNS,
           name: `${phy.landscape.slug}-${phy.cluster.principal.slug}-external-secret-ca-crt`,
         });
       },
@@ -206,8 +276,8 @@ class GenericGracefulPhysicalClusterDestructor {
         for (const ns of this.virtualLandscapes.map(x => x.slug)) {
           await this.k.Delete({
             kind: 'secretstore',
-            context: adminContextSlug,
-            namespace: adminNamespaceSlug,
+            context: aCtx,
+            namespace: aNS,
             name: `phase-6-${ns}-${phy.cluster.principal.slug}`,
           });
         }
@@ -216,4 +286,4 @@ class GenericGracefulPhysicalClusterDestructor {
   }
 }
 
-export { GenericGracefulPhysicalClusterDestructor };
+export { AwsGracefulPhysicalClusterDestructor };
