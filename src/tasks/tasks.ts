@@ -49,9 +49,13 @@ class TaskRunner {
         console.log(pc.red(`❌ Task ${quoted} failed`));
         const loop = await this.up.YesNo(`Do you want to retry?`);
         if (!loop) {
-          // user wants to abort
-          console.log(pc.red(`❌ Task ${quoted} aborted`));
-          process.exit(1);
+          const exit = await this.up.YesNo('Do you want to exit? (no will skip to next step');
+          if (exit) {
+            // user wants to abort
+            console.log(pc.red(`❌ Task ${quoted} aborted`));
+            process.exit(1);
+          }
+          return;
         }
       }
     }

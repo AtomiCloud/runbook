@@ -48,7 +48,7 @@ class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreato
       async () => {
         await $`pls setup`.cwd(tofuDir);
         await $`pls ${{ raw: L0 }}:init`.cwd(tofuDir);
-        await $`pls ${{ raw: L0 }}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L0 }}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -72,7 +72,7 @@ class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreato
       'Build L1 Generic Infrastructure',
       async () => {
         await $`pls ${{ raw: L1G }}:init`.cwd(tofuDir);
-        await $`pls ${{ raw: L1G }}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L1G }}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -81,7 +81,7 @@ class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreato
       'Build L1 Infrastructure',
       async () => {
         await $`pls ${{ raw: L1 }}:init`.cwd(tofuDir);
-        await $`pls ${{ raw: L1 }}:apply`.cwd(tofuDir);
+        await $`pls ${{ raw: L1 }}:apply -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 

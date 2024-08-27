@@ -4,7 +4,7 @@ import type { UtilPrompter } from '../prompts/util-prompter.ts';
 interface ResourceSearch {
   kind: string;
   context: string;
-  namespace: string;
+  namespace?: string;
   selector?: [string, string][];
   fieldSelector?: [string, string][];
 }
@@ -12,7 +12,7 @@ interface ResourceSearch {
 interface Resource {
   kind: string;
   context: string;
-  namespace: string;
+  namespace?: string;
   name: string;
 }
 
@@ -38,29 +38,31 @@ class KubectlUtil {
   }
 
   async Scale(r: Resource, replicas: number): Promise<void> {
-    const cmds = $.escape(
-      `kubectl scale --context ${r.context} -n ${r.namespace} ${r.kind} ${r.name} --replicas=${replicas}`,
-    );
+    const ns = r.namespace == null ? '' : `-n ${r.namespace}`;
+    const cmds = $.escape(`kubectl scale --context ${r.context} ${ns} ${r.kind} ${r.name} --replicas=${replicas}`);
     console.log(`🖥️ Scale Execute Command: ${cmds}`);
-    await $`kubectl scale --context ${r.context} -n ${r.namespace} ${r.kind} ${r.name} --replicas=${{ raw: replicas.toString(10) }}`;
+    await $`kubectl scale --context ${r.context} ${{ raw: ns }} ${r.kind} ${r.name} --replicas=${{ raw: replicas.toString(10) }}`;
   }
 
   async GetReplica(r: Resource): Promise<number> {
+    const ns = r.namespace == null ? '' : `-n ${r.namespace}`;
     const { stdout } =
-      await $`kubectl get --context ${r.context} --namespace ${r.namespace} ${r.kind} ${r.name} -o jsonpath="{.status.replicas}"`.quiet();
+      await $`kubectl get --context ${r.context} ${{ raw: ns }} ${r.kind} ${r.name} -o jsonpath="{.status.replicas}"`.quiet();
     return parseInt(stdout.toString().trim(), 10);
   }
 
   async WaitForReplica(r: Resource): Promise<void> {
+    const ns = r.namespace == null ? '' : `-n ${r.namespace}`;
     const replicas = await this.GetReplica(r);
     const cmds = $.escape(
-      `kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.readyReplicas=${replicas} --timeout=600s ${r.kind} ${r.name}`,
+      `kubectl --context ${r.context} ${ns} wait --for=jsonpath=.status.readyReplicas=${replicas} --timeout=600s ${r.kind} ${r.name}`,
     );
     console.log(`🖥️ WaitForReplicas Execute Command: ${cmds}`);
-    await $`kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.readyReplicas=${{ raw: replicas.toString(10) }} --timeout=600s ${r.kind} ${r.name}`;
+    await $`kubectl --context ${r.context} ${{ raw: ns }} wait --for=jsonpath=.status.readyReplicas=${{ raw: replicas.toString(10) }} --timeout=600s ${r.kind} ${r.name}`;
   }
 
   async WaitForApplication(r: Resource): Promise<void> {
+    const ns = r.namespace == null ? '' : `-n ${r.namespace}`;
     console.log(`🚧 Waiting for ${r.kind} ${r.name} to be healthy...`);
     await this.Wait(1, 5, {
       kind: r.kind,
@@ -69,16 +71,16 @@ class KubectlUtil {
       fieldSelector: [['metadata.name', r.name]],
     });
     const cmds = $.escape(
-      `kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.health.status=Healthy --timeout=6000s ${r.kind} ${r.name}`,
+      `kubectl --context ${r.context} ${ns} wait --for=jsonpath=.status.health.status=Healthy --timeout=6000s ${r.kind} ${r.name}`,
     );
     console.log(`🖥️ WaitForApplication Execute Command: ${cmds}`);
-    await $`kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.health.status=Healthy --timeout=6000s ${r.kind} ${r.name}`;
+    await $`kubectl --context ${r.context} ${{ raw: ns }} wait --for=jsonpath=.status.health.status=Healthy --timeout=6000s ${r.kind} ${r.name}`;
 
     const cmd = $.escape(
-      `kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.sync.status=Synced --timeout=6000s ${r.kind} ${r.name}`,
+      `kubectl --context ${r.context} ${ns} wait --for=jsonpath=.status.sync.status=Synced --timeout=6000s ${r.kind} ${r.name}`,
     );
     console.log(`🖥️ WaitForApplication Execute Command: ${cmd}`);
-    await $`kubectl --context ${r.context} -n ${r.namespace} wait --for=jsonpath=.status.sync.status=Synced --timeout=6000s ${r.kind} ${r.name}`;
+    await $`kubectl --context ${r.context} ${{ raw: ns }} wait --for=jsonpath=.status.sync.status=Synced --timeout=6000s ${r.kind} ${r.name}`;
   }
 
   async WaitForApplications(target: number, search: ResourceSearch): Promise<void> {
@@ -96,13 +98,13 @@ class KubectlUtil {
   async GetRange(search: ResourceSearch): Promise<Resource[]> {
     const flags = await this.generateFlags(search);
 
-    const cmds = $.escape(
-      `kubectl get ${search.kind} --context ${search.context} --namespace ${search.namespace} ${flags} -o json`,
-    );
+    const ns = search.namespace == null ? '' : `-n ${search.namespace}`;
+
+    const cmds = $.escape(`kubectl get ${search.kind} --context ${search.context} ${ns} ${flags} -o json`);
     console.log(`🖥️ GetRange Execute Command: ${cmds}`);
 
     const obj =
-      await $`kubectl get ${search.kind} --context ${search.context} --namespace ${search.namespace} ${{ raw: flags }} -o json`.json();
+      await $`kubectl get ${search.kind} --context ${search.context} ${{ raw: ns }} ${{ raw: flags }} -o json`.json();
     return obj.items.map((item: any) => ({
       kind: item.kind,
       context: search.context,
@@ -148,11 +150,11 @@ class KubectlUtil {
   async DeleteRange(search: ResourceSearch): Promise<void> {
     const flags = await this.generateFlags(search);
 
-    const cmds = $.escape(
-      `kubectl delete ${search.kind} --context ${search.context} --namespace ${search.namespace} ${flags}`,
-    );
+    const ns = search.namespace == null ? '' : `-n ${search.namespace}`;
+
+    const cmds = $.escape(`kubectl delete ${search.kind} --context ${search.context} ${ns} ${flags}`);
     console.log(`🖥️ DeleteRange Execute Command: ${cmds}`);
-    await $`kubectl delete ${search.kind} --context ${search.context} --namespace ${search.namespace} ${{ raw: flags }} `;
+    await $`kubectl delete ${search.kind} --context ${search.context} ${{ raw: ns }} ${{ raw: flags }} `;
   }
 
   async Delete(r: Resource): Promise<void> {

@@ -14,10 +14,11 @@ import { DigitalOceanFullAdminClusterCreator } from '../books/full-admin-cluster
 import { FullAdminClusterCreator } from '../books/full-admin-cluster-creation';
 import { GracefulAdminClusterDestructor } from '../books/graceful-admin-cluster-destruction';
 import { GenericGracefulAdminClusterDestructor } from '../books/graceful-admin-cluster-destruction/generic.ts';
-import { GenericGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/generic.ts';
+import { DigitalOceanGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/digital-ocean.ts';
 import { AdminClusterMigrator } from '../books/admin-cluster-migration';
 import { AdminClusterTransitioner } from '../books/admin-cluster-migration/transition.ts';
 import { AwsPhysicalClusterCreator } from '../books/physical-cluster-creation/aws.ts';
+import { AwsGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/aws.ts';
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -56,20 +57,34 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   );
 
   // graceful physical cluster destruction
-  const genericPhyGracefulDestructor = new GenericGracefulPhysicalClusterDestructor(
-    d.taskRunner,
-    d.yamlManipulator,
-    d.kubectl,
-    d.utilPrompter,
-    sulfoxide.services.tofu,
-    sulfoxide.services.argocd,
-    LANDSCAPE_TREE.v,
-  );
+  const phyGracefulDestructors = [
+    new DigitalOceanGracefulPhysicalClusterDestructor(
+      d.taskRunner,
+      d.yamlManipulator,
+      d.kubectl,
+      d.utilPrompter,
+      sulfoxide.services.tofu,
+      sulfoxide.services.argocd,
+      LANDSCAPE_TREE.v,
+      CLOUDS.DigitalOcean.slug,
+    ),
+    new AwsGracefulPhysicalClusterDestructor(
+      d.taskRunner,
+      d.yamlManipulator,
+      d.kubectl,
+      d.utilPrompter,
+      sulfoxide.services.tofu,
+      sulfoxide.services.argocd,
+      sulfoxide.services.external_ingress,
+      LANDSCAPE_TREE.v,
+      CLOUDS.AWS.slug,
+    ),
+  ];
 
   const phyGracefulDestructor = new GracefulPhysicalClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
-    genericPhyGracefulDestructor,
+    phyGracefulDestructors,
   );
 
   // bare admin cluster creation

@@ -66,7 +66,7 @@ class GenericGracefulAdminClusterDestructor {
       'Destroy Generic Infrastructure',
       async () => {
         await $`pls ${{ raw: L1G }}:init`.cwd(tofuDir);
-        await $`pls ${{ raw: L1G }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L1G }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -77,7 +77,7 @@ class GenericGracefulAdminClusterDestructor {
       async () => {
         await $`pls ${{ raw: L1 }}:init`.cwd(tofuDir);
         await $`pls ${{ raw: L1 }}:state:rm -- 'kubernetes_namespace.sulfoxide'`.cwd(tofuDir).nothrow();
-        await $`pls ${{ raw: L1 }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L1 }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
@@ -86,7 +86,7 @@ class GenericGracefulAdminClusterDestructor {
     await this.task.Run([
       'Destroy L0 Infrastructure',
       async () => {
-        await $`pls ${{ raw: L0 }}:destroy`.cwd(tofuDir);
+        await $`pls ${{ raw: L0 }}:destroy -- -auto-approve`.cwd(tofuDir);
       },
     ]);
 
