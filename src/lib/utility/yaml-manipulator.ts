@@ -1,4 +1,4 @@
-import { parseDocument } from "yaml";
+import { parseDocument } from 'yaml';
 
 class YamlManipulator {
   async Mutate(path: string, mutations: [string[], unknown][]): Promise<void> {

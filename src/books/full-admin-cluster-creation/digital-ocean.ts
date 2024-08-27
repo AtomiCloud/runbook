@@ -1,16 +1,11 @@
-import { $ } from "bun";
-import type {
-  LandscapeCluster,
-  ServiceTreeService,
-} from "../../lib/service-tree-def.ts";
-import type { FullAdminClusterCloudCreator } from "./cloud.ts";
-import type { TaskRunner } from "../../tasks/tasks.ts";
-import type { SulfoxideHeliumWaiter } from "../../tasks/sulfoxide-helium-waiter.ts";
-import type { SulfoxideBoronWaiter } from "../../tasks/sulfoxide-boron-waiter.ts";
+import { $ } from 'bun';
+import type { LandscapeCluster, ServiceTreeService } from '../../lib/service-tree-def.ts';
+import type { FullAdminClusterCloudCreator } from './cloud.ts';
+import type { TaskRunner } from '../../tasks/tasks.ts';
+import type { SulfoxideHeliumWaiter } from '../../tasks/sulfoxide-helium-waiter.ts';
+import type { SulfoxideBoronWaiter } from '../../tasks/sulfoxide-boron-waiter.ts';
 
-class DigitalOceanFullAdminClusterCreator
-  implements FullAdminClusterCloudCreator
-{
+class DigitalOceanFullAdminClusterCreator implements FullAdminClusterCloudCreator {
   slug: string;
 
   constructor(
@@ -37,19 +32,17 @@ class DigitalOceanFullAdminClusterCreator
     const boronNS = `${boron.platform.slug}-${boron.principal.slug}`;
 
     await this.task.Run([
-      "Create Helium Namespace",
+      'Create Helium Namespace',
       async () => {
         await $`kubectl create --context ${context} ns ${namespace}`;
       },
     ]);
 
     await this.task.Run([
-      "Create Helium Helm Release",
+      'Create Helium Helm Release',
       async () => {
         const heliumPls = `${admin.landscape.slug}:${admin.cluster.set.slug}`;
-        await $`pls ${{ raw: heliumPls }}:install -- --kube-context ${context} -n ${namespace}`.cwd(
-          heliumDir,
-        );
+        await $`pls ${{ raw: heliumPls }}:install -- --kube-context ${context} -n ${namespace}`.cwd(heliumDir);
       },
     ]);
 
@@ -57,19 +50,17 @@ class DigitalOceanFullAdminClusterCreator
     await this.task.Run(waitForHelium);
 
     await this.task.Run([
-      "Create Boron Namespace",
+      'Create Boron Namespace',
       async () => {
         await $`kubectl create --context ${context} ns ${boronNS}`;
       },
     ]);
 
     await this.task.Run([
-      "Create Boron Helm Release",
+      'Create Boron Helm Release',
       async () => {
         const boronPls = `${admin.landscape.slug}:${admin.cluster.set.slug}`;
-        await $`pls ${{ raw: boronPls }}:install -- --kube-context ${context} -n ${boronNS}`.cwd(
-          boronDir,
-        );
+        await $`pls ${{ raw: boronPls }}:install -- --kube-context ${context} -n ${boronNS}`.cwd(boronDir);
       },
     ]);
 

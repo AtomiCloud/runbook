@@ -1,6 +1,6 @@
-import type { Task } from "./tasks.ts";
-import type { KubectlUtil } from "../lib/utility/kubectl-util.ts";
-import type { ServiceTreeService } from "../lib/service-tree-def.ts";
+import type { Task } from './tasks.ts';
+import type { KubectlUtil } from '../lib/utility/kubectl-util.ts';
+import type { ServiceTreeService } from '../lib/service-tree-def.ts';
 
 class SulfoxideXenonWaiter {
   constructor(
@@ -8,7 +8,7 @@ class SulfoxideXenonWaiter {
     private sulfoxideXenon: ServiceTreeService,
   ) {}
 
-  name: string = "Wait for Sulfoxide Xenon to be ready";
+  name: string = 'Wait for Sulfoxide Xenon to be ready';
 
   task(context: string, namespace: string): Task {
     return [
@@ -18,7 +18,7 @@ class SulfoxideXenonWaiter {
         const name = `${Xe.platform.slug}-${Xe.principal.slug}-metrics-server`;
         console.log(`🚧 Waiting for deployment ${name} to be ready...`);
         await this.k.WaitForReplica({
-          kind: "deployment",
+          kind: 'deployment',
           context,
           namespace,
           name,

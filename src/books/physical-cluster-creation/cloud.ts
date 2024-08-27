@@ -1,4 +1,4 @@
-import type { LandscapeCluster } from "../../lib/service-tree-def.ts";
+import type { LandscapeCluster } from '../../lib/service-tree-def.ts';
 
 interface PhysicalClusterCloudCreator {
   slug: string;

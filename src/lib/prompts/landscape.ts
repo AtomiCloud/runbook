@@ -1,11 +1,11 @@
-import { select } from "@inquirer/prompts";
+import { select } from '@inquirer/prompts';
 import type {
   LandscapeCluster,
   CloudTreeCloud,
   CloudTreeCluster,
   ServiceTreeLandscapePrincipal,
   CloudTreeClusterSet,
-} from "../service-tree-def.ts";
+} from '../service-tree-def.ts';
 
 class ServiceTreePrompter {
   constructor(
@@ -19,20 +19,17 @@ class ServiceTreePrompter {
     prompt?: string,
   ): Promise<ServiceTreeLandscapePrincipal> {
     return (await select({
-      message: prompt ?? "Select landscape",
-      choices: landscapes.map((x) => ({
+      message: prompt ?? 'Select landscape',
+      choices: landscapes.map(x => ({
         name: x.name,
         value: x,
       })),
     })) as ServiceTreeLandscapePrincipal;
   }
 
-  async Cluster(
-    cloudPrompt?: string,
-    clusterPrompt?: string,
-  ): Promise<CloudTreeCluster> {
+  async Cluster(cloudPrompt?: string, clusterPrompt?: string): Promise<CloudTreeCluster> {
     const cloud: CloudTreeCloud = (await select<CloudTreeCloud>({
-      message: cloudPrompt ?? "Select cloud provider",
+      message: cloudPrompt ?? 'Select cloud provider',
       choices: Object.entries(this.cloudTree).map(([name, c]) => ({
         name,
         value: c,
@@ -40,14 +37,11 @@ class ServiceTreePrompter {
       })),
     })) as CloudTreeCloud;
 
-    const clusterSets = Object.values(
-      this.cloudTree[cloud.principal.name].clusterSets,
-    );
+    const clusterSets = Object.values(this.cloudTree[cloud.principal.name].clusterSets);
 
     const clusterSet = (await select<CloudTreeClusterSet>({
-      message:
-        clusterPrompt ?? `Select cluster set under '${cloud.principal.name}'`,
-      choices: clusterSets.map((x) => ({
+      message: clusterPrompt ?? `Select cluster set under '${cloud.principal.name}'`,
+      choices: clusterSets.map(x => ({
         name: x.principal.name,
         value: x,
         description: x.principal.description,
@@ -57,10 +51,8 @@ class ServiceTreePrompter {
     const clusters = Object.values(clusterSet.clusters);
 
     return (await select<CloudTreeCluster>({
-      message:
-        clusterPrompt ??
-        `Select cluster under '${cloud.principal.name} {${clusterSet.principal.name}}'`,
-      choices: clusters.map((x) => ({
+      message: clusterPrompt ?? `Select cluster under '${cloud.principal.name} {${clusterSet.principal.name}}'`,
+      choices: clusters.map(x => ({
         name: x.principal.name,
         value: x,
         description: x.principal.description,
@@ -76,16 +68,8 @@ class ServiceTreePrompter {
     adminCloudPrompt?: string,
     adminClusterPrompt?: string,
   ): Promise<[LandscapeCluster, LandscapeCluster]> {
-    const phy = await this.PhysicalLandscapeCluster(
-      phyLandscapePrompt,
-      phyCloudPrompt,
-      phyClusterPrompt,
-    );
-    const admin = await this.AdminLandscapeCluster(
-      adminLandscapePrompt,
-      adminCloudPrompt,
-      adminClusterPrompt,
-    );
+    const phy = await this.PhysicalLandscapeCluster(phyLandscapePrompt, phyCloudPrompt, phyClusterPrompt);
+    const admin = await this.AdminLandscapeCluster(adminLandscapePrompt, adminCloudPrompt, adminClusterPrompt);
     return [phy, admin];
   }
 
@@ -96,9 +80,9 @@ class ServiceTreePrompter {
   ): Promise<LandscapeCluster> {
     return await this.LandscapeCluster(
       this.phyLandscapes,
-      phyLandscapePrompt ?? "Select physical landscape to use",
-      phyCloudPrompt ?? "Select physical cloud provider to use",
-      phyClusterPrompt ?? "Select physical cluster key to use",
+      phyLandscapePrompt ?? 'Select physical landscape to use',
+      phyCloudPrompt ?? 'Select physical cloud provider to use',
+      phyClusterPrompt ?? 'Select physical cluster key to use',
     );
   }
 
@@ -109,9 +93,9 @@ class ServiceTreePrompter {
   ): Promise<LandscapeCluster> {
     return await this.LandscapeCluster(
       this.adminLandscapes,
-      landscapePrompt ?? "Select admin landscape to use",
-      cloudPrompt ?? "Select admin cloud provider to use",
-      clusterPrompt ?? "Select admin cluster key to use",
+      landscapePrompt ?? 'Select admin landscape to use',
+      cloudPrompt ?? 'Select admin cloud provider to use',
+      clusterPrompt ?? 'Select admin cluster key to use',
     );
   }
 
