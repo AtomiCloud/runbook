@@ -19,12 +19,23 @@ import { AdminClusterMigrator } from '../books/admin-cluster-migration';
 import { AdminClusterTransitioner } from '../books/admin-cluster-migration/transition.ts';
 import { AwsPhysicalClusterCreator } from '../books/physical-cluster-creation/aws.ts';
 import { AwsGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/aws.ts';
+import { VultrPhysicalClusterCreator } from "../books/physical-cluster-creation/vultr.ts";
+import { VultrGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/vultr.ts";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
 
   // physical cluster creation
   const phyClusterCreators: PhysicalClusterCloudCreator[] = [
+    new VultrPhysicalClusterCreator(
+      d.taskRunner,
+      d.yamlManipulator,
+      d.utilPrompter,
+      d.kubectl,
+      sulfoxide.services.tofu,
+      sulfoxide.services.argocd,
+      CLOUDS.Vultr.slug,
+    ),
     new DigitalOceanPhysicalClusterCreator(
       d.taskRunner,
       d.yamlManipulator,
@@ -58,6 +69,16 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
 
   // graceful physical cluster destruction
   const phyGracefulDestructors = [
+    new VultrGracefulPhysicalClusterDestructor(
+      d.taskRunner,
+      d.yamlManipulator,
+      d.kubectl,
+      d.utilPrompter,
+      sulfoxide.services.tofu,
+      sulfoxide.services.argocd,
+      LANDSCAPE_TREE.v,
+      CLOUDS.Vultr.slug,
+    ),
     new DigitalOceanGracefulPhysicalClusterDestructor(
       d.taskRunner,
       d.yamlManipulator,
