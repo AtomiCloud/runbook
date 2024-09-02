@@ -1,5 +1,6 @@
 import pc from 'picocolors';
 import type { UtilPrompter } from '../lib/prompts/util-prompter.ts';
+import { $ } from 'bun';
 
 // name, action
 interface ComplexTask {
@@ -43,10 +44,12 @@ class TaskRunner {
         const shouldExit = await task();
         if (shouldExit) process.exit(0);
         console.log(pc.green(`✅ Task ${quoted} completed`));
+        await $`say "completed"`.nothrow();
         break;
       } catch (e) {
         Bun.inspect(e);
         console.log(pc.red(`❌ Task ${quoted} failed`));
+        $`say "failed, do you want to retry?"`.nothrow().then();
         const loop = await this.up.YesNo(`Do you want to retry?`);
         if (!loop) {
           const exit = await this.up.YesNo('Do you want to exit? (no will skip to next step');
@@ -67,6 +70,7 @@ class TaskRunner {
    * @constructor
    */
   async Run(task: Task): Promise<void> {
+    $`say "Awaiting confirmation"`.nothrow().then();
     const r = await this.up.YesNoExit(`Do you want to run task '${this.extractName(task)}'?`);
     if (r === 'exit') process.exit(0);
     if (r) await this.Exec(task);
