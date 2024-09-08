@@ -3,7 +3,7 @@ import { $ } from 'bun';
 import type { CloudTreeCluster, ServiceTreeService } from '../../lib/service-tree-def.ts';
 import type { TaskRunner } from '../../tasks/tasks.ts';
 
-class GenericSecretsOperatorDestructor {
+class GenericSecretOperatorDestructor {
   constructor(
     private task: TaskRunner,
     private sulfoxide_infisical: ServiceTreeService,
@@ -62,4 +62,4 @@ class GenericSecretsOperatorDestructor {
   }
 }
 
-export { GenericSecretsOperatorDestructor };
+export { GenericSecretOperatorDestructor };
