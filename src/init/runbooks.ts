@@ -21,6 +21,7 @@ import { AwsPhysicalClusterCreator } from '../books/physical-cluster-creation/aw
 import { AwsGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/aws.ts';
 import { VultrPhysicalClusterCreator } from "../books/physical-cluster-creation/vultr.ts";
 import { VultrGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/vultr.ts";
+import { SecretsOperatorCreator } from "../books/secrets-operator-creation";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -175,6 +176,16 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     adminClusterTransitioner,
   );
 
+  // create secrets operator
+  const secretsOperatorCreator = new SecretsOperatorCreator(
+    d.taskRunner,
+    d.stp,
+    d.utilPrompter,
+    d.yamlManipulator,
+    sulfoxide.services.infisical,
+  );
+
+
   return [
     physicalClusterCreator,
     phyGracefulDestructor,
@@ -182,6 +193,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     fullAdminCloudCreator,
     adminGracefulDestructor,
     adminClusterMigrator,
+    secretsOperatorCreator,
   ];
 }
 
