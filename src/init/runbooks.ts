@@ -25,6 +25,9 @@ import { VultrPhysicalClusterCreator } from "../books/physical-cluster-creation/
 import { VultrGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/vultr.ts";
 import { SecretsOperatorDestructor } from "../books/secrets-operator-destruction";
 import { SecretsOperatorCreator } from "../books/secrets-operator-creation";
+import { GenericSecretOperatorCreator } from "../books/secrets-operator-creation/generic.ts";
+import { GenericSecretOperatorDestructor } from "../books/secrets-operator-destruction/generic.ts";
+import { SecretsOperatorMigrator } from "../books/secrets-operator-migration";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -180,18 +183,31 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   );
 
   // create secrets operator
-  const secretsOperatorCreator = new SecretsOperatorCreator(
+  const genericSecretOperatorCreator = new GenericSecretOperatorCreator(
     d.taskRunner,
-    d.stp,
     d.utilPrompter,
     d.yamlManipulator,
     sulfoxide.services.infisical
   );
+  const secretsOperatorCreator = new SecretsOperatorCreator(
+    genericSecretOperatorCreator,
+    d.stp
+  );
+
+  const genericSecretsOperatorDestructor = new GenericSecretOperatorDestructor(
+    d.taskRunner,
+    sulfoxide.services.infisical
+  );
 
   const secretsOperatorDestructor = new SecretsOperatorDestructor(
-    d.taskRunner,
-    d.stp,
-    sulfoxide.services.infisical
+    genericSecretsOperatorDestructor,
+    d.stp
+  );
+
+  const secretsOperatorMigrator = new SecretsOperatorMigrator(
+    genericSecretOperatorCreator,
+    genericSecretsOperatorDestructor,
+    d.stp
   );
 
 
@@ -203,7 +219,8 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     adminGracefulDestructor,
     adminClusterMigrator,
     secretsOperatorCreator,
-    secretsOperatorDestructor
+    secretsOperatorDestructor,
+    secretsOperatorMigrator
   ];
 }
 
