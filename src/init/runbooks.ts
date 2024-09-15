@@ -3,7 +3,7 @@ import type { TaskGenerator } from "./tasks.ts";
 import type { RunBook } from "../books/run-book.ts";
 import type { PhysicalClusterCloudCreator } from "../books/physical-cluster-creation/cloud.ts";
 import { DigitalOceanPhysicalClusterCreator } from "../books/physical-cluster-creation/digital-ocean.ts";
-import { CLOUDS, LANDSCAPE_TREE, SERVICE_TREE } from "../lib/service-tree.ts";
+import { CLOUDS, LANDSCAPE_TREE, ROOT, SERVICE_TREE } from "../lib/service-tree.ts";
 import { PhysicalClusterCreator } from "../books/physical-cluster-creation";
 import { GracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction";
 import { BareAdminClusterCreator } from "../books/bare-admin-cluster-creation";
@@ -28,6 +28,8 @@ import { SecretsOperatorCreator } from "../books/secrets-operator-creation";
 import { GenericSecretOperatorCreator } from "../books/secrets-operator-creation/generic.ts";
 import { GenericSecretOperatorDestructor } from "../books/secrets-operator-destruction/generic.ts";
 import { SecretsOperatorMigrator } from "../books/secrets-operator-migration";
+import { GenericAdminClusterCloudPurger } from "../books/purge-admin-cluster/cloud.ts";
+import { AdminClusterPurger } from "../books/purge-admin-cluster";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -182,6 +184,22 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     adminClusterTransitioner
   );
 
+  // purge admin cluster
+  const genericAdminClusterCloudPurger = new GenericAdminClusterCloudPurger(
+    d.taskRunner,
+    ROOT.ProjectId,
+    ROOT.Environment.Arceus,
+    "TOFU_BACKEND",
+    sulfoxide.services.kubernetes_access,
+    sulfoxide.services.argocd
+  );
+
+  const purgeAdminCluster = new AdminClusterPurger(
+    d.stp,
+    d.serviceTreePrinter,
+    genericAdminClusterCloudPurger
+  );
+
   // create secrets operator
   const genericSecretOperatorCreator = new GenericSecretOperatorCreator(
     d.taskRunner,
@@ -218,6 +236,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     fullAdminCloudCreator,
     adminGracefulDestructor,
     adminClusterMigrator,
+    purgeAdminCluster,
     secretsOperatorCreator,
     secretsOperatorDestructor,
     secretsOperatorMigrator
