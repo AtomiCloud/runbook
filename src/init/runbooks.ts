@@ -30,6 +30,8 @@ import { GenericSecretOperatorDestructor } from "../books/secrets-operator-destr
 import { SecretsOperatorMigrator } from "../books/secrets-operator-migration";
 import { GenericAdminClusterCloudPurger } from "../books/purge-admin-cluster/cloud.ts";
 import { AdminClusterPurger } from "../books/purge-admin-cluster";
+import { PhysicalClusterPurger } from "../books/purge-physical-cluster";
+import { GenericPhysicalClusterCloudPurger } from "../books/purge-physical-cluster/cloud.ts";
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -115,6 +117,25 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.stp,
     d.serviceTreePrinter,
     phyGracefulDestructors
+  );
+
+  // purge physical cluster
+  const genericPhyPurgeCloud = new GenericPhysicalClusterCloudPurger(
+    d.taskRunner,
+    d.yamlManipulator,
+    d.kubectl,
+    d.utilPrompter,
+    ROOT.ProjectId,
+    ROOT.Environment.Arceus,
+    "TOFU_BACKEND",
+    sulfoxide.services.kubernetes_access,
+    sulfoxide.services.argocd,
+    LANDSCAPE_TREE.v
+  );
+  const phyPurger = new PhysicalClusterPurger(
+    d.stp,
+    d.serviceTreePrinter,
+    genericPhyPurgeCloud
   );
 
   // bare admin cluster creation
@@ -232,6 +253,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   return [
     physicalClusterCreator,
     phyGracefulDestructor,
+    phyPurger,
     bareAdminClusterCreator,
     fullAdminCloudCreator,
     adminGracefulDestructor,
