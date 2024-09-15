@@ -221,6 +221,15 @@ const SERVICE_TREE = {
   sulfoxide: {
     principal: PLATFORMS.Sulfoxide,
     services: {
+      kubernetes_access: {
+        principal: {
+          name: 'Kubernetes Access',
+          slug: 'kubernetes-access',
+          description: 'Kubernetes Access for all clusters',
+          projectId: '1cfbdaa6-fff6-4e27-aa17-f0f4cf26da60',
+        },
+        platform: PLATFORMS.Sulfoxide,
+      },
       aws_adapter: {
         principal: {
           name: 'AWS Adapter',
@@ -599,4 +608,11 @@ const LANDSCAPE_TREE = {
   p: [LANDSCAPES.entei],
 } satisfies Record<string, ServiceTreeLandscapePrincipal[]>;
 
-export { LANDSCAPES, CLOUDS, CLUSTERS, CLUSTER_SETS, PLATFORMS, SERVICE_TREE, CLOUD_TREE, LANDSCAPE_TREE };
+const ROOT = {
+  ProjectId: '32992bde-d1bc-46b3-88ae-5b3279943ae6',
+  Environment: {
+    Arceus: "arceus",
+  },
+}
+
+export { ROOT, LANDSCAPES, CLOUDS, CLUSTERS, CLUSTER_SETS, PLATFORMS, SERVICE_TREE, CLOUD_TREE, LANDSCAPE_TREE };
