@@ -4,12 +4,14 @@ import type { FullAdminClusterCloudCreator } from './cloud.ts';
 import type { TaskRunner } from '../../tasks/tasks.ts';
 import type { SulfoxideHeliumWaiter } from '../../tasks/sulfoxide-helium-waiter.ts';
 import type { SulfoxideBoronWaiter } from '../../tasks/sulfoxide-boron-waiter.ts';
+import type { SulfoxideFluorineCreator } from "../../tasks/sulfoxide-fluorine-creator.ts";
 
 class DigitalOceanFullAdminClusterCreator implements FullAdminClusterCloudCreator {
   slug: string;
 
   constructor(
     private task: TaskRunner,
+    private sulfoxideFluorineCreator: SulfoxideFluorineCreator,
     private sulfoxideHelium: ServiceTreeService,
     private sulfoxideBoron: ServiceTreeService,
     private sulfoxideHeliumWaiter: SulfoxideHeliumWaiter,
@@ -66,6 +68,9 @@ class DigitalOceanFullAdminClusterCreator implements FullAdminClusterCloudCreato
 
     const waitForBoron = this.sulfoxideBoronWaiter.task(context, namespace);
     await this.task.Run(waitForBoron);
+
+    const createFluorineSchedule = this.sulfoxideFluorineCreator.task(admin.landscape.slug, admin.cluster.principal.slug);
+    await this.task.Run(createFluorineSchedule)
   }
 }
 
