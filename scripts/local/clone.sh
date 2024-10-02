@@ -12,7 +12,7 @@ for service in ${SERVICES[@]}; do
     continue
   fi
   echo "⬇️ Cloning sulfoxide.${service}..."
-  git clone "git@github.com:AtomiCloud/sulfoxide.${service}.git" "./repos/${service}"
+  git clone "git@github.com:AtomiCloud/sulfoxide.${service}.git" "./platforms/sulfoxide/${service}"
 done
 
 echo "🔧 Done!"

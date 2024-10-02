@@ -5,7 +5,7 @@ env:
   SERVICES: >-
     argon boron bromine carbon chlorine cobalt fluorine gold 
     helium infisical iodine iron krypton lead lithium radon silicon 
-    sodium sulfur tofu tofu-l2 xenon zinc
+    sodium sulfur tofu tofu-l2 xenon zinc tin
 tasks:
   runbook:
     desc: Runbook

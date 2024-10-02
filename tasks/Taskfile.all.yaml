@@ -29,3 +29,7 @@ tasks:
     desc: Check all sulfoxide repos
     cmds:
       - ./scripts/local/check.sh
+  push:
+    desc: Push all sulfoxide repos
+    cmds:
+      - ./scripts/local/push.sh
