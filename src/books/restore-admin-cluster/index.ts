@@ -19,22 +19,33 @@ class AdminClusterRestorer implements RunBook {
   }
 
   async Run(): Promise<void> {
-    const [landscape, cluster] = await this.stp.AdminLandscapeCluster();
+    const [fl, fc] = await this.stp.AdminLandscapeCluster(
+      "Select the admin landscape to migrate from",
+      "Select the admin cloud to migrate from",
+      "Select the admin cluster to migrate from"
+    );
+    const [tl, tc] = await this.stp.AdminLandscapeCluster(
+      "Select the admin landscape to migrate to",
+      "Select the admin cloud to migrate to",
+      "Select the admin cluster to migrate to"
+    );
 
-    // output selected service tree for confirmation
-    console.log("🎯 Selected Service Tree to create");
-    this.printer.Print("", [landscape, cluster]);
+    console.log("🎯 Selected Service Tree to migrate");
+    this.printer.Print("From", [fl, fc]);
+    this.printer.Print("To  ", [tl, tc]);
 
-    // purge cluster
-    await this.genericCloudPurger.Run([landscape, cluster]);
+
 
     // create an empty cluster
-    const bc = this.bareClouds.find(x => x.slug === cluster.cloud.slug);
+    const bc = this.bareClouds.find(x => x.slug === tc.cloud.slug);
     if (!bc) return console.log("⚠️ Cloud not supported (Missing Bare Cloud Runbook");
-    await bc.Run([landscape, cluster]);
+    await bc.Run([tl, tc]);
+
+    // purge cluster
+    await this.genericCloudPurger.Run([fl, fc]);
 
     // restore cluster
-    await this.genericCloudRestorer.Run([landscape, cluster]);
+    await this.genericCloudRestorer.Run([tl, tc]);
   }
 }
 

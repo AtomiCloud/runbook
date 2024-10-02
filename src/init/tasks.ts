@@ -4,7 +4,7 @@ import { SulfoxideHeliumWaiter } from '../tasks/sulfoxide-helium-waiter.ts';
 import { SulfoxideBoronWaiter } from '../tasks/sulfoxide-boron-waiter.ts';
 import { SERVICE_TREE } from '../lib/service-tree.ts';
 import { SulfoxideXenonWaiter } from '../tasks/sulfoxide-xenon-waiter.ts';
-import { SulfoxideFluorineCreator } from "../tasks/sulfoxide-fluorine-creator.ts";
+import { SulfoxideFluorineCreator } from '../tasks/sulfoxide-fluorine-creator.ts';
 
 interface TaskGenerator {
   nitrosoWaiter: NitrosoWaiter;
@@ -21,7 +21,7 @@ function initTasks(d: Dependencies): TaskGenerator {
     sulfoxideHeliumWaiter: new SulfoxideHeliumWaiter(d.kubectl, services.argocd),
     sulfoxideBoronWaiter: new SulfoxideBoronWaiter(d.kubectl, services.internal_ingress),
     sulfoxideXenonWaiter: new SulfoxideXenonWaiter(d.kubectl, services.metricsServer),
-    sulfoxideFluorineCreator: new SulfoxideFluorineCreator(services.backup_engine)
+    sulfoxideFluorineCreator: new SulfoxideFluorineCreator(services.backup_engine),
   };
 }
 

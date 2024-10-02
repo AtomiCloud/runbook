@@ -33,7 +33,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
     const heliumDir = `./platforms/${helium.platform.slug}/${helium.principal.slug}`;
 
-    const yamlPath = path.join(heliumDir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
+    const yamlPath = path.join(heliumDir, 'chart', `values.${adminLandscape.slug}.yaml`);
     const adminContextSlug = `${adminLandscape.slug}-${adminCluster.principal.slug}`;
     const adminNamespaceSlug = `${helium.platform.slug}-${helium.principal.slug}`;
 

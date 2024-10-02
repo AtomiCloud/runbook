@@ -47,7 +47,7 @@ class AwsGracefulPhysicalClusterDestructor implements GracefulClusterCloudDestru
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
     const He_Dir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
 
-    const yamlPath = path.join(He_Dir, 'chart', `values.${admin.landscape.slug}.${admin.cluster.set.slug}.yaml`);
+    const yamlPath = path.join(He_Dir, 'chart', `values.${admin.landscape.slug}.yaml`);
 
     // Update ArgoCD configurations
     await this.task.Run([

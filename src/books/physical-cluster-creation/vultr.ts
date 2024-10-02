@@ -34,7 +34,7 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
     const He_Dir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
 
-    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
+    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.yaml`);
     const aCtx = `${adminLandscape.slug}-${adminCluster.principal.slug}`;
     const aNS = `${He.platform.slug}-${He.principal.slug}`;
 

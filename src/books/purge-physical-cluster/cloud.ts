@@ -45,7 +45,7 @@ class GenericPhysicalClusterCloudPurger {
     const HePID = He.principal.projectId;
     const HeKey = `${pl.toUpperCase()}_${pc.toUpperCase()}_KUBECONFIG`;
     const HeDir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
-    const HePath = path.join(HeDir, 'chart', `values.${al}.${adminCluster.set.slug}.yaml`);
+    const HePath = path.join(HeDir, 'chart', `values.${al}.yaml`);
 
     // setup tofu repository correctly
     const rootFlags = `--projectId=${this.projectId} --env=${this.env} ${this.tofuKey}`;

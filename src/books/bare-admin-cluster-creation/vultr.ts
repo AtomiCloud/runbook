@@ -7,7 +7,7 @@ import type { BareAdminClusterCloudCreator } from './cloud.ts';
 import type { KubectlUtil } from '../../lib/utility/kubectl-util.ts';
 import type { SulfoxideXenonWaiter } from '../../tasks/sulfoxide-xenon-waiter.ts';
 
-class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreator {
+class VultrBareAdminClusterCreator implements BareAdminClusterCloudCreator {
   slug: string;
 
   constructor(
@@ -35,11 +35,11 @@ class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreato
     const context = `${admin.landscape.slug}-${admin.cluster.principal.slug}`;
 
     // Check if we want to inject the DO secrets
-    const doSecrets = await this.up.YesNo('Do you want to inject Digital Ocean secrets?');
-    if (doSecrets) {
-      const token = await input({ message: 'Enter your Digital Ocean token' });
-      await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${admin.landscape.slug} ${admin.cluster.principal.slug.toUpperCase()}_DIGITALOCEAN_TOKEN=${token}`;
-      console.log(`✅ Digital Ocean secrets for '${admin.landscape.name}' '${admin.cluster.principal.name} injected`);
+    const vultrSecrets = await this.up.YesNo('Do you want to inject Vultr secrets?');
+    if (vultrSecrets) {
+      const token = await input({ message: 'Enter your Vultr token' });
+      await $`infisical secrets set --projectId=${tofu.principal.projectId} --env=${admin.landscape.slug} ${admin.cluster.principal.slug.toUpperCase()}_VULTR_TOKEN=${token}`;
+      console.log(`✅ Vultr secrets for '${admin.landscape.name}' '${admin.cluster.principal.name} injected`);
     }
 
     const L0 = `${admin.landscape.slug}:l0:${admin.cluster.principal.slug}`;
@@ -129,4 +129,4 @@ class DigitalOceanBareAdminClusterCreator implements BareAdminClusterCloudCreato
   }
 }
 
-export { DigitalOceanBareAdminClusterCreator };
+export { VultrBareAdminClusterCreator };

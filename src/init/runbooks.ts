@@ -1,39 +1,39 @@
-import type { Dependencies } from "./index.ts";
-import type { TaskGenerator } from "./tasks.ts";
-import type { RunBook } from "../books/run-book.ts";
-import type { PhysicalClusterCloudCreator } from "../books/physical-cluster-creation/cloud.ts";
-import { DigitalOceanPhysicalClusterCreator } from "../books/physical-cluster-creation/digital-ocean.ts";
-import { CLOUDS, LANDSCAPE_TREE, ROOT, SERVICE_TREE } from "../lib/service-tree.ts";
-import { PhysicalClusterCreator } from "../books/physical-cluster-creation";
-import { GracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction";
-import { BareAdminClusterCreator } from "../books/bare-admin-cluster-creation";
-import type { BareAdminClusterCloudCreator } from "../books/bare-admin-cluster-creation/cloud.ts";
-import { DigitalOceanBareAdminClusterCreator } from "../books/bare-admin-cluster-creation/digital-ocean.ts";
-import type { FullAdminClusterCloudCreator } from "../books/full-admin-cluster-creation/cloud.ts";
-import { DigitalOceanFullAdminClusterCreator } from "../books/full-admin-cluster-creation/digital-ocean.ts";
-import { FullAdminClusterCreator } from "../books/full-admin-cluster-creation";
-import { GracefulAdminClusterDestructor } from "../books/graceful-admin-cluster-destruction";
-import { GenericGracefulAdminClusterDestructor } from "../books/graceful-admin-cluster-destruction/generic.ts";
-import {
-  DigitalOceanGracefulPhysicalClusterDestructor
-} from "../books/graceful-physical-cluster-destruction/digital-ocean.ts";
-import { AdminClusterMigrator } from "../books/admin-cluster-migration";
-import { AdminClusterTransitioner } from "../books/admin-cluster-migration/transition.ts";
-import { AwsPhysicalClusterCreator } from "../books/physical-cluster-creation/aws.ts";
-import { AwsGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/aws.ts";
-import { VultrPhysicalClusterCreator } from "../books/physical-cluster-creation/vultr.ts";
-import { VultrGracefulPhysicalClusterDestructor } from "../books/graceful-physical-cluster-destruction/vultr.ts";
-import { SecretsOperatorDestructor } from "../books/secrets-operator-destruction";
-import { SecretsOperatorCreator } from "../books/secrets-operator-creation";
-import { GenericSecretOperatorCreator } from "../books/secrets-operator-creation/generic.ts";
-import { GenericSecretOperatorDestructor } from "../books/secrets-operator-destruction/generic.ts";
-import { SecretsOperatorMigrator } from "../books/secrets-operator-migration";
-import { GenericAdminClusterCloudPurger } from "../books/purge-admin-cluster/cloud.ts";
-import { AdminClusterPurger } from "../books/purge-admin-cluster";
-import { PhysicalClusterPurger } from "../books/purge-physical-cluster";
-import { GenericPhysicalClusterCloudPurger } from "../books/purge-physical-cluster/cloud.ts";
-import { GenericAdminClusterCloudRestorer } from "../books/restore-admin-cluster/cloud.ts";
-import { AdminClusterRestorer } from "../books/restore-admin-cluster";
+import type { Dependencies } from './index.ts';
+import type { TaskGenerator } from './tasks.ts';
+import type { RunBook } from '../books/run-book.ts';
+import type { PhysicalClusterCloudCreator } from '../books/physical-cluster-creation/cloud.ts';
+import { DigitalOceanPhysicalClusterCreator } from '../books/physical-cluster-creation/digital-ocean.ts';
+import { CLOUDS, LANDSCAPE_TREE, ROOT, SERVICE_TREE } from '../lib/service-tree.ts';
+import { PhysicalClusterCreator } from '../books/physical-cluster-creation';
+import { GracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction';
+import { BareAdminClusterCreator } from '../books/bare-admin-cluster-creation';
+import type { BareAdminClusterCloudCreator } from '../books/bare-admin-cluster-creation/cloud.ts';
+import { DigitalOceanBareAdminClusterCreator } from '../books/bare-admin-cluster-creation/digital-ocean.ts';
+import type { FullAdminClusterCloudCreator } from '../books/full-admin-cluster-creation/cloud.ts';
+import { DigitalOceanFullAdminClusterCreator } from '../books/full-admin-cluster-creation/digital-ocean.ts';
+import { FullAdminClusterCreator } from '../books/full-admin-cluster-creation';
+import { GracefulAdminClusterDestructor } from '../books/graceful-admin-cluster-destruction';
+import { GenericGracefulAdminClusterDestructor } from '../books/graceful-admin-cluster-destruction/generic.ts';
+import { DigitalOceanGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/digital-ocean.ts';
+import { AdminClusterMigrator } from '../books/admin-cluster-migration';
+import { AdminClusterTransitioner } from '../books/admin-cluster-migration/transition.ts';
+import { AwsPhysicalClusterCreator } from '../books/physical-cluster-creation/aws.ts';
+import { AwsGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/aws.ts';
+import { VultrPhysicalClusterCreator } from '../books/physical-cluster-creation/vultr.ts';
+import { VultrGracefulPhysicalClusterDestructor } from '../books/graceful-physical-cluster-destruction/vultr.ts';
+import { SecretsOperatorDestructor } from '../books/secrets-operator-destruction';
+import { SecretsOperatorCreator } from '../books/secrets-operator-creation';
+import { GenericSecretOperatorCreator } from '../books/secrets-operator-creation/generic.ts';
+import { GenericSecretOperatorDestructor } from '../books/secrets-operator-destruction/generic.ts';
+import { SecretsOperatorMigrator } from '../books/secrets-operator-migration';
+import { GenericAdminClusterCloudPurger } from '../books/purge-admin-cluster/cloud.ts';
+import { AdminClusterPurger } from '../books/purge-admin-cluster';
+import { PhysicalClusterPurger } from '../books/purge-physical-cluster';
+import { GenericPhysicalClusterCloudPurger } from '../books/purge-physical-cluster/cloud.ts';
+import { GenericAdminClusterCloudRestorer } from '../books/restore-admin-cluster/cloud.ts';
+import { AdminClusterRestorer } from '../books/restore-admin-cluster';
+import { VultrBareAdminClusterCreator } from '../books/bare-admin-cluster-creation/vultr.ts';
+import { VultrFullAdminClusterCreator } from '../books/full-admin-cluster-creation/vultr.ts';
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -47,7 +47,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       d.kubectl,
       sulfoxide.services.tofu,
       sulfoxide.services.argocd,
-      CLOUDS.Vultr.slug
+      CLOUDS.Vultr.slug,
     ),
     new DigitalOceanPhysicalClusterCreator(
       d.taskRunner,
@@ -56,7 +56,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       d.kubectl,
       sulfoxide.services.tofu,
       sulfoxide.services.argocd,
-      CLOUDS.DigitalOcean.slug
+      CLOUDS.DigitalOcean.slug,
     ),
     new AwsPhysicalClusterCreator(
       d.taskRunner,
@@ -68,8 +68,8 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.argocd,
       sulfoxide.services.cluster_scaler,
       sulfoxide.services.aws_adapter,
-      CLOUDS.AWS.slug
-    )
+      CLOUDS.AWS.slug,
+    ),
   ];
   const physicalClusterCreator = new PhysicalClusterCreator(
     d.taskRunner,
@@ -77,7 +77,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     t.nitrosoWaiter,
     sulfoxide.services.argocd,
     LANDSCAPE_TREE.v,
-    phyClusterCreators
+    phyClusterCreators,
   );
 
   // graceful physical cluster destruction
@@ -90,7 +90,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.tofu,
       sulfoxide.services.argocd,
       LANDSCAPE_TREE.v,
-      CLOUDS.Vultr.slug
+      CLOUDS.Vultr.slug,
     ),
     new DigitalOceanGracefulPhysicalClusterDestructor(
       d.taskRunner,
@@ -100,7 +100,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.tofu,
       sulfoxide.services.argocd,
       LANDSCAPE_TREE.v,
-      CLOUDS.DigitalOcean.slug
+      CLOUDS.DigitalOcean.slug,
     ),
     new AwsGracefulPhysicalClusterDestructor(
       d.taskRunner,
@@ -111,14 +111,14 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.argocd,
       sulfoxide.services.external_ingress,
       LANDSCAPE_TREE.v,
-      CLOUDS.AWS.slug
-    )
+      CLOUDS.AWS.slug,
+    ),
   ];
 
   const phyGracefulDestructor = new GracefulPhysicalClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
-    phyGracefulDestructors
+    phyGracefulDestructors,
   );
 
   // purge physical cluster
@@ -129,16 +129,12 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.utilPrompter,
     ROOT.ProjectId,
     ROOT.Environment.Arceus,
-    "TOFU_BACKEND",
+    'TOFU_BACKEND',
     sulfoxide.services.kubernetes_access,
     sulfoxide.services.argocd,
-    LANDSCAPE_TREE.v
+    LANDSCAPE_TREE.v,
   );
-  const phyPurger = new PhysicalClusterPurger(
-    d.stp,
-    d.serviceTreePrinter,
-    genericPhyPurgeCloud
-  );
+  const phyPurger = new PhysicalClusterPurger(d.stp, d.serviceTreePrinter, genericPhyPurgeCloud);
 
   // bare admin cluster creation
   const bareAdminCloudCreators: BareAdminClusterCloudCreator[] = [
@@ -150,8 +146,18 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.backup_engine,
       sulfoxide.services.metricsServer,
       t.sulfoxideXenonWaiter,
-      CLOUDS.DigitalOcean.slug
-    )
+      CLOUDS.DigitalOcean.slug,
+    ),
+    new VultrBareAdminClusterCreator(
+      d.taskRunner,
+      d.utilPrompter,
+      d.kubectl,
+      sulfoxide.services.tofu,
+      sulfoxide.services.backup_engine,
+      sulfoxide.services.metricsServer,
+      t.sulfoxideXenonWaiter,
+      CLOUDS.Vultr.slug,
+    ),
   ];
   const bareAdminClusterCreator = new BareAdminClusterCreator(d.stp, d.serviceTreePrinter, bareAdminCloudCreators);
 
@@ -164,15 +170,24 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       sulfoxide.services.internal_ingress,
       t.sulfoxideHeliumWaiter,
       t.sulfoxideBoronWaiter,
-      CLOUDS.DigitalOcean.slug
-    )
+      CLOUDS.DigitalOcean.slug,
+    ),
+    new VultrFullAdminClusterCreator(
+      d.taskRunner,
+      t.sulfoxideFluorineCreator,
+      sulfoxide.services.argocd,
+      sulfoxide.services.internal_ingress,
+      t.sulfoxideHeliumWaiter,
+      t.sulfoxideBoronWaiter,
+      CLOUDS.Vultr.slug,
+    ),
   ];
 
   const fullAdminCloudCreator = new FullAdminClusterCreator(
     d.stp,
     d.serviceTreePrinter,
     bareAdminCloudCreators,
-    fullAdminCloudCreators
+    fullAdminCloudCreators,
   );
 
   // graceful admin cluster destruction
@@ -181,13 +196,13 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.kubectl,
     sulfoxide.services.argocd,
     sulfoxide.services.internal_ingress,
-    sulfoxide.services.tofu
+    sulfoxide.services.tofu,
   );
 
   const adminGracefulDestructor = new GracefulAdminClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
-    genericAdminGracefulDestructor
+    genericAdminGracefulDestructor,
   );
 
   // admin cluster migration
@@ -198,7 +213,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     sulfoxide.services.backup_engine,
     sulfoxide.services.internal_ingress,
     t.sulfoxideHeliumWaiter,
-    t.sulfoxideBoronWaiter
+    t.sulfoxideBoronWaiter,
   );
   const adminClusterMigrator = new AdminClusterMigrator(
     d.stp,
@@ -215,23 +230,19 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.taskRunner,
     ROOT.ProjectId,
     ROOT.Environment.Arceus,
-    "TOFU_BACKEND",
+    'TOFU_BACKEND',
     sulfoxide.services.kubernetes_access,
-    sulfoxide.services.argocd
+    sulfoxide.services.argocd,
   );
 
-  const purgeAdminCluster = new AdminClusterPurger(
-    d.stp,
-    d.serviceTreePrinter,
-    genericAdminClusterCloudPurger
-  );
+  const purgeAdminCluster = new AdminClusterPurger(d.stp, d.serviceTreePrinter, genericAdminClusterCloudPurger);
 
   // restore admin cluster
   const genericAdminClusterCloudRestorer = new GenericAdminClusterCloudRestorer(
     d.taskRunner,
     d.kubectl,
     sulfoxide.services.backup_engine,
-    t.sulfoxideFluorineCreator
+    t.sulfoxideFluorineCreator,
   );
 
   const restoreAdminCluster = new AdminClusterRestorer(
@@ -239,7 +250,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.serviceTreePrinter,
     genericAdminClusterCloudPurger,
     bareAdminCloudCreators,
-    genericAdminClusterCloudRestorer
+    genericAdminClusterCloudRestorer,
   );
 
   // create secrets operator
@@ -247,32 +258,24 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     d.taskRunner,
     d.utilPrompter,
     d.yamlManipulator,
-    sulfoxide.services.infisical
+    sulfoxide.services.infisical,
   );
-  const secretsOperatorCreator = new SecretsOperatorCreator(
-    genericSecretOperatorCreator,
-    d.stp
-  );
+  const secretsOperatorCreator = new SecretsOperatorCreator(genericSecretOperatorCreator, d.stp);
 
   const genericSecretsOperatorDestructor = new GenericSecretOperatorDestructor(
     d.taskRunner,
-    sulfoxide.services.infisical
+    sulfoxide.services.infisical,
   );
 
-  const secretsOperatorDestructor = new SecretsOperatorDestructor(
-    genericSecretsOperatorDestructor,
-    d.stp
-  );
+  const secretsOperatorDestructor = new SecretsOperatorDestructor(genericSecretsOperatorDestructor, d.stp);
 
   const secretsOperatorMigrator = new SecretsOperatorMigrator(
     genericSecretOperatorCreator,
     genericSecretsOperatorDestructor,
-    d.stp
+    d.stp,
   );
 
-
   return [
-
     // physical cluster
     physicalClusterCreator,
     phyGracefulDestructor,
@@ -289,7 +292,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     // secrets operator
     secretsOperatorCreator,
     secretsOperatorDestructor,
-    secretsOperatorMigrator
+    secretsOperatorMigrator,
   ];
 }
 

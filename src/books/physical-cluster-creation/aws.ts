@@ -42,7 +42,7 @@ class AwsPhysicalClusterCreator implements PhysicalClusterCloudCreator {
     const Kr_Dir = `./platforms/${Kr.platform.slug}/${Kr.principal.slug}`;
     const Pb_Dir = `./platforms/${Pb.platform.slug}/${Pb.principal.slug}`;
 
-    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
+    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.yaml`);
     const Kr_YamlPath = path.join(Kr_Dir, 'chart', `values.${phyLandscape.slug}.${phyCluster.principal.slug}.yaml`);
     const Pb_YamlPath = path.join(Pb_Dir, 'chart', `values.${phyLandscape.slug}.${phyCluster.principal.slug}.yaml`);
 
