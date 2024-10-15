@@ -1,10 +1,11 @@
 version: '3'
-
+includes:
+  all: tasks/Taskfile.all.yaml
 env:
   SERVICES: >-
     argon boron bromine carbon chlorine cobalt fluorine gold 
     helium infisical iodine iron krypton lead lithium radon silicon 
-    sodium sulfur tofu tofu-l2 xenon zinc
+    sodium sulfur tofu tofu-l2 xenon zinc tin
 tasks:
   runbook:
     desc: Runbook
@@ -14,18 +15,6 @@ tasks:
     desc: Setup local environment
     cmds:
       - ./scripts/local/secrets.sh
-  pull:
-    desc: Pull all sulfoxide repos
-    cmds:
-      - ./scripts/local/pull.sh
-  clone:
-    desc: Clone all sulfoxide repos
-    cmds:
-      - ./scripts/local/clone.sh
-  check:
-    desc: Check all sulfoxide repos
-    cmds:
-      - ./scripts/local/check.sh
   kubectl:
     desc: Generate kubeconfig from all clusters
     env:

@@ -4,6 +4,8 @@ import type { ServiceTreePrinter } from '../../lib/utility/service-tree-printer.
 import type { BareAdminClusterCloudCreator } from '../bare-admin-cluster-creation/cloud.ts';
 import type { GenericGracefulAdminClusterDestructor } from '../graceful-admin-cluster-destruction/generic.ts';
 import type { AdminClusterTransitioner } from './transition.ts';
+import type { SulfoxideFluorineCreator } from '../../tasks/sulfoxide-fluorine-creator.ts';
+import type { TaskRunner } from '../../tasks/tasks.ts';
 
 class AdminClusterMigrator implements RunBook {
   name: string = 'Admin Cluster Migration';
@@ -11,10 +13,12 @@ class AdminClusterMigrator implements RunBook {
 
   constructor(
     private stp: ServiceTreePrompter,
+    private task: TaskRunner,
     private printer: ServiceTreePrinter,
     private clouds: BareAdminClusterCloudCreator[],
     private destructors: GenericGracefulAdminClusterDestructor,
     private transition: AdminClusterTransitioner,
+    private sulfoxideFluorineScheduler: SulfoxideFluorineCreator,
   ) {}
 
   async Run(): Promise<void> {
@@ -44,6 +48,10 @@ class AdminClusterMigrator implements RunBook {
 
     // destroy old cluster
     await this.destructors.Run([fromLandscape, fromCluster]);
+
+    // create schedule
+    const backupScheduler = this.sulfoxideFluorineScheduler.task(toLandscape.slug, toCluster.principal.slug);
+    await this.task.Run(backupScheduler);
   }
 }
 

@@ -1,0 +1,35 @@
+version: '3'
+
+tasks:
+  add:
+    desc: Add all sulfoxide repos
+    cmds:
+      - ./scripts/local/add.sh
+  commit:
+    desc: Commit all sulfoxide repos
+    cmds:
+      - ./scripts/local/commit.sh {{.CLI_ARGS}}
+  direnv:
+    desc: Trigger direnv for all sulfoxide repos
+    cmds:
+      - ./scripts/local/direnv.sh
+  pcr:
+    desc: Execute pre-commit on all sulfoxide repos
+    cmds:
+      - ./scripts/local/precommit.sh
+  pull:
+    desc: Pull all sulfoxide repos
+    cmds:
+      - ./scripts/local/pull.sh
+  clone:
+    desc: Clone all sulfoxide repos
+    cmds:
+      - ./scripts/local/clone.sh
+  check:
+    desc: Check all sulfoxide repos
+    cmds:
+      - ./scripts/local/check.sh
+  push:
+    desc: Push all sulfoxide repos
+    cmds:
+      - ./scripts/local/push.sh

@@ -2,7 +2,7 @@
 
 set -eou pipefail
 
-echo "🔧 Cloning repos..."
+echo "🔧 Pulling from all repos..."
 
 CYAN=$(tput setaf 6) # Red text
 RESET=$(tput sgr0)

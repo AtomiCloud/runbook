@@ -42,7 +42,7 @@ class DigitalOceanGracefulPhysicalClusterDestructor implements GracefulClusterCl
     const adminNamespaceSlug = `${argo.platform.slug}-${argo.principal.slug}`;
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
     const heliumDir = `./platforms/${argo.platform.slug}/${argo.principal.slug}`;
-    const yamlPath = path.join(heliumDir, 'chart', `values.${admin.landscape.slug}.${admin.cluster.set.slug}.yaml`);
+    const yamlPath = path.join(heliumDir, 'chart', `values.${admin.landscape.slug}.yaml`);
 
     // Update ArgoCD configurations
     await this.task.Run([

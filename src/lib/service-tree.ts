@@ -611,8 +611,8 @@ const LANDSCAPE_TREE = {
 const ROOT = {
   ProjectId: '32992bde-d1bc-46b3-88ae-5b3279943ae6',
   Environment: {
-    Arceus: "arceus",
+    Arceus: 'arceus',
   },
-}
+};
 
 export { ROOT, LANDSCAPES, CLOUDS, CLUSTERS, CLUSTER_SETS, PLATFORMS, SERVICE_TREE, CLOUD_TREE, LANDSCAPE_TREE };

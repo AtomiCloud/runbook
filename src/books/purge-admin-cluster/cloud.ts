@@ -80,8 +80,6 @@ class GenericAdminClusterCloudPurger {
       await $`infisical secrets delete ${{ raw: heFlag }}`;
     }]);
 
-
-
   }
 }
 

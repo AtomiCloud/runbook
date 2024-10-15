@@ -1,12 +1,12 @@
-import type { PhysicalClusterCloudCreator } from "./cloud.ts";
-import { $ } from "bun";
-import * as path from "node:path";
-import type { UtilPrompter } from "../../lib/prompts/util-prompter.ts";
-import { input } from "@inquirer/prompts";
-import type { YamlManipulator } from "../../lib/utility/yaml-manipulator.ts";
-import type { KubectlUtil } from "../../lib/utility/kubectl-util.ts";
-import type { LandscapeCluster, ServiceTreeService } from "../../lib/service-tree-def.ts";
-import type { TaskRunner } from "../../tasks/tasks.ts";
+import type { PhysicalClusterCloudCreator } from './cloud.ts';
+import { $ } from 'bun';
+import * as path from 'node:path';
+import type { UtilPrompter } from '../../lib/prompts/util-prompter.ts';
+import { input } from '@inquirer/prompts';
+import type { YamlManipulator } from '../../lib/utility/yaml-manipulator.ts';
+import type { KubectlUtil } from '../../lib/utility/kubectl-util.ts';
+import type { LandscapeCluster, ServiceTreeService } from '../../lib/service-tree-def.ts';
+import type { TaskRunner } from '../../tasks/tasks.ts';
 
 class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
   slug: string;
@@ -34,7 +34,7 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
     const tofuDir = `./platforms/${tofu.platform.slug}/${tofu.principal.slug}`;
     const He_Dir = `./platforms/${He.platform.slug}/${He.principal.slug}`;
 
-    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.${adminCluster.set.slug}.yaml`);
+    const He_YamlPath = path.join(He_Dir, 'chart', `values.${adminLandscape.slug}.yaml`);
     const aCtx = `${adminLandscape.slug}-${adminCluster.principal.slug}`;
     const aNS = `${He.platform.slug}-${He.principal.slug}`;
 
@@ -107,7 +107,7 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
     await this.task.Run([
       'Apply Helium Configuration',
       async () => {
-        await $`pls ${{ raw: HePls }}:install -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
+        await $`pls ${{ raw: HePls }}:install-sync -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
       },
     ]);
 
@@ -188,6 +188,13 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
             ['atomi.cloud/cluster', phyCluster.principal.slug],
           ],
         });
+      },
+    ]);
+
+    await this.task.Run([
+      'Apply Helium Configuration',
+      async () => {
+        await $`pls ${{ raw: HePls }}:install -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
       },
     ]);
   }
