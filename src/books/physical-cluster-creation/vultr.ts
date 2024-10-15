@@ -107,7 +107,7 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
     await this.task.Run([
       'Apply Helium Configuration',
       async () => {
-        await $`pls ${{ raw: HePls }}:install -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
+        await $`pls ${{ raw: HePls }}:install-sync -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
       },
     ]);
 
@@ -188,6 +188,13 @@ class VultrPhysicalClusterCreator implements PhysicalClusterCloudCreator {
             ['atomi.cloud/cluster', phyCluster.principal.slug],
           ],
         });
+      },
+    ]);
+
+    await this.task.Run([
+      'Apply Helium Configuration',
+      async () => {
+        await $`pls ${{ raw: HePls }}:install -- --kube-context ${aCtx} -n ${aNS}`.cwd(He_Dir);
       },
     ]);
   }

@@ -1,4 +1,4 @@
-{ pkgs, atomi, pkgs-2405, pkgs-230927, pkgs-240810 }:
+{ pkgs, atomi, pkgs-2405, pkgs-230927, pkgs-241012 }:
 let
 
   all = {
@@ -16,8 +16,8 @@ let
         inherit terraform;
       }
     );
-    pkgs240810 = (
-      with pkgs-240810;
+    pkgs241012 = (
+      with pkgs-241012;
       {
         inherit
           coreutils
@@ -60,6 +60,6 @@ let
 in
 with all;
 atomipkgs //
-pkgs240810 //
 pkgs230927 //
+pkgs241012 //
 pkgs2405
