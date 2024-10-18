@@ -23,6 +23,7 @@ with packages;
     terraform
     bun
     curl
+    dogdns
   ];
 
   lint = [
