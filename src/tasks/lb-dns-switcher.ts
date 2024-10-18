@@ -1,15 +1,14 @@
-import type { Task } from "./tasks.ts";
-import type { CloudTreeClusterPrincipal } from "../lib/service-tree-def.ts";
-import { $ } from "bun";
+import type { Task } from './tasks.ts';
+import type { CloudTreeClusterPrincipal } from '../lib/service-tree-def.ts';
+import { $ } from 'bun';
 
 class LoadBalancerDNSSwitcher {
   constructor(
     private external: string,
-    private internal: string
-  ) {
-  }
+    private internal: string,
+  ) {}
 
-  name: string = "Switching DNS for Load Balancing";
+  name: string = 'Switching DNS for Load Balancing';
 
   task(from: CloudTreeClusterPrincipal, target: CloudTreeClusterPrincipal): Task {
     return [
@@ -18,14 +17,16 @@ class LoadBalancerDNSSwitcher {
         console.log(`🚧 Switching DNS from ${from.name} to ${target.name}`);
         const path = `./platforms/sulfoxide/tofu`;
         await $`nix develop -c pls setup`.cwd(path);
-        await $`nix develop -c pls arceus:apply -- -var="target_cluster=${{ raw: target.slug }}" -auto-approve `.cwd(path);
+        await $`nix develop -c pls arceus:apply -- -var="target_cluster=${{ raw: target.slug }}" -auto-approve `.cwd(
+          path,
+        );
         console.log(`✅ DNS now points to ${target.name}`);
         await $`sleep 120`;
-        console.log("🔍 Checking if DNS has propagated...");
+        console.log('🔍 Checking if DNS has propagated...');
         const query = async (): Promise<string> => {
           const result = await $`dog pichu.${this.external} -J`.cwd(path).json();
-          const answers: { name: string, type: string, data: { domain: string } }[] = result.responses[0].answers;
-          return answers.find(x => x.type === "CNAME")?.data.domain ?? "";
+          const answers: { name: string; type: string; data: { domain: string } }[] = result.responses[0].answers;
+          return answers.find(x => x.type === 'CNAME')?.data.domain ?? '';
         };
         const t = `${target.slug}.${this.internal}`;
         let domain = await query();
@@ -35,7 +36,7 @@ class LoadBalancerDNSSwitcher {
           domain = await query();
         }
         console.log(`✅ DNS propagated!`);
-      }
+      },
     ];
   }
 }
