@@ -5,8 +5,10 @@ import { SulfoxideBoronWaiter } from '../tasks/sulfoxide-boron-waiter.ts';
 import { SERVICE_TREE } from '../lib/service-tree.ts';
 import { SulfoxideXenonWaiter } from '../tasks/sulfoxide-xenon-waiter.ts';
 import { SulfoxideFluorineCreator } from '../tasks/sulfoxide-fluorine-creator.ts';
+import { LoadBalancerDNSSwitcher } from '../tasks/lb-dns-switcher.ts';
 
 interface TaskGenerator {
+  lbDNSSwitcher: LoadBalancerDNSSwitcher;
   nitrosoWaiter: NitrosoWaiter;
   sulfoxideHeliumWaiter: SulfoxideHeliumWaiter;
   sulfoxideBoronWaiter: SulfoxideBoronWaiter;
@@ -17,6 +19,7 @@ interface TaskGenerator {
 function initTasks(d: Dependencies): TaskGenerator {
   const services = SERVICE_TREE.sulfoxide.services;
   return {
+    lbDNSSwitcher: new LoadBalancerDNSSwitcher('cluster.atomi.cloud', 'lb.atomi.cloud'),
     nitrosoWaiter: new NitrosoWaiter(d.kubectl, d.httpUtil),
     sulfoxideHeliumWaiter: new SulfoxideHeliumWaiter(d.kubectl, services.argocd),
     sulfoxideBoronWaiter: new SulfoxideBoronWaiter(d.kubectl, services.internal_ingress),

@@ -21,6 +21,7 @@ let
       {
         inherit
           coreutils
+          dogdns
           sd
           curl
           bash
