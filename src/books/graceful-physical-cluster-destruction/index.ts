@@ -1,7 +1,7 @@
 import type { RunBook } from '../run-book.ts';
 import type { ServiceTreePrompter } from '../../lib/prompts/landscape.ts';
 import type { ServiceTreePrinter } from '../../lib/utility/service-tree-printer.ts';
-import type { GracefulClusterCloudDestructor } from './cloud.ts';
+import type { GracefulPhysicalClusterCloudDestructor } from './cloud.ts';
 
 class GracefulPhysicalClusterDestructor implements RunBook {
   name: string = 'Graceful Physical Cluster Destruction';
@@ -10,7 +10,7 @@ class GracefulPhysicalClusterDestructor implements RunBook {
   constructor(
     private stp: ServiceTreePrompter,
     private p: ServiceTreePrinter,
-    private clouds: GracefulClusterCloudDestructor[],
+    private clouds: GracefulPhysicalClusterCloudDestructor[],
   ) {}
 
   async Run(): Promise<void> {
