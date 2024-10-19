@@ -23,17 +23,20 @@ class LoadBalancerDNSSwitcher {
         console.log(`✅ DNS now points to ${target.name}`);
         await $`sleep 120`;
         console.log('🔍 Checking if DNS has propagated...');
+
         const query = async (): Promise<string> => {
+          console.log(`🖥️ dog pichu.${this.external} -J`);
           const result = await $`dog pichu.${this.external} -J`.cwd(path).json();
           const answers: { name: string; type: string; data: { domain: string } }[] = result.responses[0].answers;
           return answers.find(x => x.type === 'CNAME')?.data.domain ?? '';
         };
-        const t = `${target.slug}.${this.internal}`;
+        const t = `${target.slug}.${this.internal}.`;
         let domain = await query();
         while (domain != t) {
           console.log(`⏳ Waiting for DNS to propagate...`);
           await $`sleep 5`;
           domain = await query();
+          console.log(`✅ Check: ${domain}, Target: ${t}`);
         }
         console.log(`✅ DNS propagated!`);
       },

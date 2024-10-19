@@ -128,7 +128,7 @@ class DigitalOceanPhysicalClusterCreator implements PhysicalClusterCloudCreator 
           context: aCtx,
           namespace: aNs,
           selector: [
-            ['atomi.cloud/sync-wave', 'wave-5'],
+            ['atomi.cloud/sync-wave', 'wave-4'],
             ['atomi.cloud/landscape', phyLandscape.slug],
             ['atomi.cloud/cluster', phyCluster.principal.slug],
           ],

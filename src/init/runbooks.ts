@@ -34,6 +34,8 @@ import { GenericAdminClusterCloudRestorer } from '../books/restore-admin-cluster
 import { AdminClusterRestorer } from '../books/restore-admin-cluster';
 import { VultrBareAdminClusterCreator } from '../books/bare-admin-cluster-creation/vultr.ts';
 import { VultrFullAdminClusterCreator } from '../books/full-admin-cluster-creation/vultr.ts';
+import { PhysicalClusterMigrator } from '../books/physical-cluster-migration';
+import { PhysicalClusterTransitioner } from '../books/physical-cluster-migration/transition.ts';
 
 function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
   const sulfoxide = SERVICE_TREE.sulfoxide;
@@ -71,7 +73,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       CLOUDS.AWS.slug,
     ),
   ];
-  const physicalClusterCreator = new PhysicalClusterCreator(
+  const phyClusterCreator = new PhysicalClusterCreator(
     d.taskRunner,
     d.stp,
     t.nitrosoWaiter,
@@ -115,7 +117,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     ),
   ];
 
-  const phyGracefulDestructor = new GracefulPhysicalClusterDestructor(
+  const phyClusterGracefulDestructor = new GracefulPhysicalClusterDestructor(
     d.stp,
     d.serviceTreePrinter,
     phyGracefulDestructors,
@@ -134,7 +136,17 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     sulfoxide.services.argocd,
     LANDSCAPE_TREE.v,
   );
-  const phyPurger = new PhysicalClusterPurger(d.stp, d.serviceTreePrinter, genericPhyPurgeCloud);
+  const phyClusterPurger = new PhysicalClusterPurger(d.stp, d.serviceTreePrinter, genericPhyPurgeCloud);
+
+  // migrate physical cluster
+  const phyTransitioner = new PhysicalClusterTransitioner(d.taskRunner, t.lbDNSSwitcher);
+  const phyClusterMigrator = new PhysicalClusterMigrator(
+    d.stp,
+    d.serviceTreePrinter,
+    phyClusterCreators,
+    phyGracefulDestructors,
+    phyTransitioner,
+  );
 
   // bare admin cluster creation
   const bareAdminCloudCreators: BareAdminClusterCloudCreator[] = [
@@ -159,7 +171,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
       CLOUDS.Vultr.slug,
     ),
   ];
-  const bareAdminClusterCreator = new BareAdminClusterCreator(d.stp, d.serviceTreePrinter, bareAdminCloudCreators);
+  const adminClusterBareCreator = new BareAdminClusterCreator(d.stp, d.serviceTreePrinter, bareAdminCloudCreators);
 
   // full admin cluster creation
   const fullAdminCloudCreators: FullAdminClusterCloudCreator[] = [
@@ -183,7 +195,7 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
     ),
   ];
 
-  const fullAdminCloudCreator = new FullAdminClusterCreator(
+  const adminClusterFullCreator = new FullAdminClusterCreator(
     d.stp,
     d.serviceTreePrinter,
     bareAdminCloudCreators,
@@ -277,13 +289,14 @@ function initRunBooks(d: Dependencies, t: TaskGenerator): RunBook[] {
 
   return [
     // physical cluster
-    physicalClusterCreator,
-    phyGracefulDestructor,
-    phyPurger,
+    phyClusterCreator,
+    phyClusterGracefulDestructor,
+    phyClusterPurger,
+    phyClusterMigrator,
 
     // admin cluster
-    bareAdminClusterCreator,
-    fullAdminCloudCreator,
+    adminClusterBareCreator,
+    adminClusterFullCreator,
     adminGracefulDestructor,
     adminClusterMigrator,
     purgeAdminCluster,

@@ -9,9 +9,9 @@ import { KubectlUtil, type ResourceSearch } from '../../lib/utility/kubectl-util
 import type { TaskRunner } from '../../tasks/tasks.ts';
 import type { YamlManipulator } from '../../lib/utility/yaml-manipulator.ts';
 import type { UtilPrompter } from '../../lib/prompts/util-prompter.ts';
-import type { GracefulClusterCloudDestructor } from './cloud.ts';
+import type { GracefulPhysicalClusterCloudDestructor } from './cloud.ts';
 
-class DigitalOceanGracefulPhysicalClusterDestructor implements GracefulClusterCloudDestructor {
+class DigitalOceanGracefulPhysicalClusterDestructor implements GracefulPhysicalClusterCloudDestructor {
   slug: string;
 
   constructor(
