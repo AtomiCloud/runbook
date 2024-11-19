@@ -68,7 +68,7 @@ class AwsGracefulPhysicalClusterDestructor implements GracefulPhysicalClusterClo
     await this.task.Run([
       'Apply Helium Configuration',
       async () => {
-        await $`pls ${{ raw: adminPls }}:install -- --kube-context ${aCtx} --namespace ${aNS}`.cwd(He_Dir);
+        await $`pls ${{ raw: adminPls }}:install-sync -- --kube-context ${aCtx} --namespace ${aNS}`.cwd(He_Dir);
       },
     ]);
 
