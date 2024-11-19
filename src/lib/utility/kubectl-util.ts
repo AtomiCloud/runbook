@@ -46,6 +46,8 @@ class KubectlUtil {
 
   async GetReplica(r: Resource): Promise<number> {
     const ns = r.namespace == null ? '' : `-n ${r.namespace}`;
+    const cmds = $.escape(`kubectl get --context ${r.context} ${ns} ${r.kind} ${r.name} -o jsonpath="{.status.replicas}"`);
+    console.log(`🖥️ GetReplica Execute Command: ${cmds}`);
     const { stdout } =
       await $`kubectl get --context ${r.context} ${{ raw: ns }} ${r.kind} ${r.name} -o jsonpath="{.status.replicas}"`.quiet();
     return parseInt(stdout.toString().trim(), 10);

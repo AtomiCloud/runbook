@@ -225,7 +225,7 @@ class GenericPhysicalClusterCloudPurger {
         const toBeDeleted = allSS.filter(x => vSlugs.some(s => x.name.includes(`${s}-${pc}`)));
 
         console.log(
-          '🗑️ Deleting ExternalSecrets...',
+          '🗑️ Deleting SecretStores...',
           toBeDeleted.map(x => x.name),
         );
         for (const d of toBeDeleted) {
