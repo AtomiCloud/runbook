@@ -1,4 +1,4 @@
-{ pkgs, atomi, pkgs-2405, pkgs-230927, pkgs-241012 }:
+{ pkgs, atomi, pkgs-2411 }:
 let
 
   all = {
@@ -6,37 +6,24 @@ let
       with atomi;
       {
         inherit
+          atomiutils
+          infrautils
+          infralint
           sg
           pls;
       }
     );
-    pkgs230927 = (
-      with pkgs-230927;
-      {
-        inherit terraform;
-      }
-    );
-    pkgs241012 = (
-      with pkgs-241012;
+    pkgs2411 = (
+      with pkgs-2411;
       {
         inherit
-          coreutils
           dogdns
           sd
-          curl
-          bash
-          jq
-          yq-go
-          gawk
-          gomplate
 
           # fmt
           treefmt
-          opentofu
-          kubectx
           ncurses
           bun
-
 
           # dev
           git
@@ -47,20 +34,11 @@ let
 
           # lint
           gitlint
-          shellcheck
-          terraform-docs
-          tfsec
-          tflint;
+          shellcheck;
       }
-    );
-    pkgs2405 = (
-      with pkgs-2405;
-      { }
     );
   };
 in
 with all;
 atomipkgs //
-pkgs230927 //
-pkgs241012 //
-pkgs2405
+pkgs2411

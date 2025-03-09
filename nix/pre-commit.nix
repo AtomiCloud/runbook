@@ -64,7 +64,7 @@ pre-commit-lib.run {
     a-enforce-exec = {
       enable = true;
       name = "Enforce Shell Script executable";
-      entry = "${packages.coreutils}/bin/chmod +x";
+      entry = "${packages.atomiutils}/bin/chmod +x";
       files = ".*sh$";
       language = "system";
       pass_filenames = true;
@@ -74,7 +74,7 @@ pre-commit-lib.run {
       enable = true;
       name = "Terraform Security";
       description = "Static analyzer for terraform security";
-      entry = "${packages.tfsec}/bin/tfsec .";
+      entry = "${packages.infralint}/bin/tfsec .";
       files = ".*tf";
       language = "system";
       pass_filenames = false;

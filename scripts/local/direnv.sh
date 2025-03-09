@@ -11,7 +11,7 @@ RESET=$(tput sgr0)
 for service in ${SERVICES[@]}; do
   echo "⛰️ Triggering direnv for sulfoxide.${service}..."
   set +e
-  cd "./platforms/sulfoxide/${service}" && eval "$(direnv export bash)"2>&1 | awk -v prefix="${CYAN}${service}${RESET}\t" '{print prefix " " $0}' &
+  cd "./platforms/sulfoxide/${service}" && eval "$(direnv export bash)"2 >&1 | awk -v prefix="${CYAN}${service}${RESET}\t" '{print prefix " " $0}' &
   set -e
 done
 
