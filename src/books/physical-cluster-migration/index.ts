@@ -1,9 +1,9 @@
-import type { RunBook } from "../run-book.ts";
-import type { ServiceTreePrompter } from "../../lib/prompts/landscape.ts";
-import type { ServiceTreePrinter } from "../../lib/utility/service-tree-printer.ts";
-import { PhysicalClusterTransitioner } from "./transition.ts";
-import type { PhysicalClusterCloudCreator } from "../physical-cluster-creation/cloud.ts";
-import type { GracefulPhysicalClusterCloudDestructor } from "../graceful-physical-cluster-destruction/cloud.ts";
+import type { RunBook } from '../run-book.ts';
+import type { ServiceTreePrompter } from '../../lib/prompts/landscape.ts';
+import type { ServiceTreePrinter } from '../../lib/utility/service-tree-printer.ts';
+import { PhysicalClusterTransitioner } from './transition.ts';
+import type { PhysicalClusterCloudCreator } from '../physical-cluster-creation/cloud.ts';
+import type { GracefulPhysicalClusterCloudDestructor } from '../graceful-physical-cluster-destruction/cloud.ts';
 
 class PhysicalClusterMigrator implements RunBook {
   name: string = 'Physical Cluster Migration';

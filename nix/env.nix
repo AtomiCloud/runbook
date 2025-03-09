@@ -2,12 +2,8 @@
 with packages;
 {
   system = [
-    coreutils
+    atomiutils
     sd
-    bash
-    jq
-    yq-go
-    gawk
   ];
 
   dev = [
@@ -17,13 +13,9 @@ with packages;
   ];
 
   main = [
-    opentofu
-    kubectx
     ncurses
-    terraform
+    infrautils
     bun
-    curl
-    dogdns
   ];
 
   lint = [
@@ -32,8 +24,9 @@ with packages;
 
     # additional linters
     infisical
-    terraform-docs
-    tfsec
-    tflint
+    infralint
+    #    terraform-docs
+    #    tfsec
+    #    tflint
   ];
 }
